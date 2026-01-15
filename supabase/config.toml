@@ -1,0 +1,10 @@
+project_id = "hzxenhkmawctxzdjvnyw"
+
+[functions.send-otp]
+verify_jwt = false
+
+[functions.verify-otp]
+verify_jwt = false
+
+[functions.check-admin-session]
+verify_jwt = false
