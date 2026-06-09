@@ -16,6 +16,11 @@ const SettingsManager = () => {
     default_course_price: "",
     whatsapp_number: "+22220454530",
     site_title: "ÉLITE ZONE",
+    google_maps_embed_url: "",
+    google_maps_direct_link: "",
+    center_address: "",
+    center_phone: "",
+    center_whatsapp: "+22220454530",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
