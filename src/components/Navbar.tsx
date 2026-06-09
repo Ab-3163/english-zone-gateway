@@ -12,6 +12,8 @@ const navLinks = [
   { href: "#why-us", label: "لماذا نحن" },
   { href: "#gallery", label: "المعرض" },
   { href: "#testimonials", label: "آراء الطلاب" },
+  { href: "/results", label: "النتائج" },
+  { href: "#location", label: "موقعنا" },
 ];
 
 const Navbar = () => {
@@ -143,28 +145,30 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className={`relative px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
-                activeSection === link.href.replace("#", "")
-                  ? "text-primary"
-                  : isScrolled 
-                    ? "text-foreground/80 hover:text-primary" 
-                    : "text-white/90 hover:text-white"
-              }`}
-            >
-              {link.label}
-              {activeSection === link.href.replace("#", "") && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-primary rounded-full" />
-              )}
-            </a>
-          ))}
+          {navLinks.map((link) => {
+            const isRoute = link.href.startsWith("/");
+            const hrefFinal = (!isRoute && location.pathname !== "/") ? `/${link.href}` : link.href;
+            return (
+              <a
+                key={link.href}
+                href={hrefFinal}
+                className={`relative px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                  !isRoute && activeSection === link.href.replace("#", "")
+                    ? "text-primary"
+                    : isScrolled 
+                      ? "text-foreground/80 hover:text-primary" 
+                      : "text-white/90 hover:text-white"
+                }`}
+              >
+                {link.label}
+                {!isRoute && activeSection === link.href.replace("#", "") && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-primary rounded-full" />
+                )}
+              </a>
+            );
+          })}
           <a 
-            href="https://wa.me/+22220454530?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D9%81%D9%8A%20%C3%89LITE%20ZONE"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/register"
             className="btn-primary mr-4"
           >
             سجّل الآن
@@ -187,20 +191,24 @@ const Navbar = () => {
         {isOpen && (
           <div className="md:hidden py-4 border-t border-border/50 animate-fade-in-down bg-background/95 backdrop-blur-lg rounded-b-2xl">
             <div className="flex flex-col gap-2">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className={`px-4 py-3 rounded-lg font-medium transition-all duration-300 ${
-                    activeSection === link.href.replace("#", "")
-                      ? "bg-primary/10 text-primary"
-                      : "text-foreground/80 hover:bg-muted hover:text-primary"
-                  }`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  {link.label}
-                </a>
-              ))}
+              {navLinks.map((link) => {
+                const isRoute = link.href.startsWith("/");
+                const hrefFinal = (!isRoute && location.pathname !== "/") ? `/${link.href}` : link.href;
+                return (
+                  <a
+                    key={link.href}
+                    href={hrefFinal}
+                    className={`px-4 py-3 rounded-lg font-medium transition-all duration-300 ${
+                      !isRoute && activeSection === link.href.replace("#", "")
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground/80 hover:bg-muted hover:text-primary"
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {link.label}
+                  </a>
+                );
+              })}
               {/* Admin button in mobile menu */}
               {(isAdmin || showAdminButton) && (
                 <button
@@ -215,9 +223,7 @@ const Navbar = () => {
                 </button>
               )}
               <a 
-                href="https://wa.me/+22220454530?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D9%81%D9%8A%20%C3%89LITE%20ZONE"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/register"
                 className="btn-primary text-center mt-2" 
                 onClick={() => setIsOpen(false)}
               >
