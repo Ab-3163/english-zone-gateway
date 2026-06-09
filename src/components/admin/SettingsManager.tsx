@@ -113,6 +113,57 @@ const SettingsManager = () => {
           />
         </div>
 
+        <div className="pt-4 border-t border-border">
+          <h3 className="font-semibold mb-3">معلومات الموقع والخريطة</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">عنوان المركز</label>
+              <Input
+                value={settings.center_address}
+                onChange={(e) => setSettings({ ...settings, center_address: e.target.value })}
+                placeholder="نواكشوط، موريتانيا"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">رقم الهاتف</label>
+              <Input
+                value={settings.center_phone}
+                onChange={(e) => setSettings({ ...settings, center_phone: e.target.value })}
+                placeholder="+222..."
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">رقم الواتساب (الموقع)</label>
+              <Input
+                value={settings.center_whatsapp}
+                onChange={(e) => setSettings({ ...settings, center_whatsapp: e.target.value })}
+                placeholder="+222..."
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Google Maps Embed URL</label>
+              <Input
+                value={settings.google_maps_embed_url}
+                onChange={(e) => setSettings({ ...settings, google_maps_embed_url: e.target.value })}
+                placeholder="https://www.google.com/maps/embed?pb=..."
+                dir="ltr"
+              />
+              <p className="text-xs text-muted-foreground mt-1">من Google Maps → مشاركة → تضمين خريطة → انسخ src فقط</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Google Maps Direct Link</label>
+              <Input
+                value={settings.google_maps_direct_link}
+                onChange={(e) => setSettings({ ...settings, google_maps_direct_link: e.target.value })}
+                placeholder="https://maps.app.goo.gl/..."
+                dir="ltr"
+              />
+            </div>
+          </div>
+        </div>
+
         <Button onClick={handleSave} disabled={saving} className="w-full">
           {saving ? (
             <Loader2 className="w-5 h-5 animate-spin" />
