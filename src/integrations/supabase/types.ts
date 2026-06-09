@@ -170,6 +170,51 @@ export type Database = {
         }
         Relationships: []
       }
+      registrations: {
+        Row: {
+          age: number | null
+          course_type: string | null
+          created_at: string
+          full_name: string
+          id: string
+          language: string
+          level: string | null
+          notes: string | null
+          phone: string
+          preferred_time: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          age?: number | null
+          course_type?: string | null
+          created_at?: string
+          full_name: string
+          id?: string
+          language: string
+          level?: string | null
+          notes?: string | null
+          phone: string
+          preferred_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          age?: number | null
+          course_type?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          language?: string
+          level?: string | null
+          notes?: string | null
+          phone?: string
+          preferred_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           created_at: string
@@ -191,6 +236,54 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: string
+        }
+        Relationships: []
+      }
+      student_results: {
+        Row: {
+          admin_note: string | null
+          course: string
+          created_at: string
+          full_name: string
+          grade: string | null
+          id: string
+          level: string | null
+          phone: string | null
+          published: boolean
+          score: number | null
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          course: string
+          created_at?: string
+          full_name: string
+          grade?: string | null
+          id?: string
+          level?: string | null
+          phone?: string | null
+          published?: boolean
+          score?: number | null
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          course?: string
+          created_at?: string
+          full_name?: string
+          grade?: string | null
+          id?: string
+          level?: string | null
+          phone?: string | null
+          published?: boolean
+          score?: number | null
+          status?: string
+          student_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -226,6 +319,18 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      search_student_result: {
+        Args: { _query: string }
+        Returns: {
+          admin_note: string
+          course: string
+          full_name: string
+          grade: string
+          level: string
+          score: number
+          status: string
+        }[]
       }
     }
     Enums: {
