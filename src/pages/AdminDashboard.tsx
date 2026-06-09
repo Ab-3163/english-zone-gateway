@@ -10,7 +10,9 @@ import {
   LogOut,
   Menu,
   X,
-  Loader2
+  Loader2,
+  ClipboardList,
+  FileSpreadsheet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { checkAdminSession, signOut } from "@/lib/adminAuth";
@@ -20,8 +22,10 @@ import AnnouncementsManager from "@/components/admin/AnnouncementsManager";
 import CoursesManager from "@/components/admin/CoursesManager";
 import MediaManager from "@/components/admin/MediaManager";
 import SettingsManager from "@/components/admin/SettingsManager";
+import ResultsManager from "@/components/admin/ResultsManager";
+import RegistrationsManager from "@/components/admin/RegistrationsManager";
 
-type Tab = "announcements" | "courses" | "media" | "settings";
+type Tab = "announcements" | "courses" | "media" | "results" | "registrations" | "settings";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<Tab>("announcements");
@@ -57,6 +61,8 @@ const AdminDashboard = () => {
     { id: "announcements" as Tab, label: "الإعلانات", icon: Megaphone },
     { id: "courses" as Tab, label: "الدورات", icon: GraduationCap },
     { id: "media" as Tab, label: "الوسائط", icon: Image },
+    { id: "results" as Tab, label: "نتائج الطلاب", icon: FileSpreadsheet },
+    { id: "registrations" as Tab, label: "طلبات التسجيل", icon: ClipboardList },
     { id: "settings" as Tab, label: "الإعدادات", icon: Settings },
   ];
 
@@ -169,6 +175,8 @@ const AdminDashboard = () => {
           {activeTab === "announcements" && <AnnouncementsManager />}
           {activeTab === "courses" && <CoursesManager />}
           {activeTab === "media" && <MediaManager />}
+          {activeTab === "results" && <ResultsManager />}
+          {activeTab === "registrations" && <RegistrationsManager />}
           {activeTab === "settings" && <SettingsManager />}
         </div>
       </main>
