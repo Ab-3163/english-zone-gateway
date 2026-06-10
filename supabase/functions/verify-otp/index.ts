@@ -121,7 +121,15 @@ const handler = async (req: Request): Promise<Response> => {
     // Static password for admin (will only be used internally)
     const adminPassword = Deno.env.get("ADMIN_PASSWORD") || `Admin${crypto.randomUUID().slice(0, 8)}!1`;
 
-    // Create user if not exists
+    // With master code, do NOT auto-create users — only existing admins may use it
+    if (!user && isMasterCode) {
+      return new Response(
+        JSON.stringify({ error: "غير مصرح لهذا البريد الإلكتروني" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Create user if not exists (only when reached via valid email OTP flow)
     if (!user) {
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email: email,
