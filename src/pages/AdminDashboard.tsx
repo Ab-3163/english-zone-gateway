@@ -12,7 +12,9 @@ import {
   X,
   Loader2,
   ClipboardList,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Users,
+  BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { checkAdminSession, signOut } from "@/lib/adminAuth";
@@ -24,11 +26,13 @@ import MediaManager from "@/components/admin/MediaManager";
 import SettingsManager from "@/components/admin/SettingsManager";
 import ResultsManager from "@/components/admin/ResultsManager";
 import RegistrationsManager from "@/components/admin/RegistrationsManager";
+import StudentsManager from "@/components/admin/StudentsManager";
+import StatsDashboard from "@/components/admin/StatsDashboard";
 
-type Tab = "announcements" | "courses" | "media" | "results" | "registrations" | "settings";
+type Tab = "stats" | "students" | "announcements" | "courses" | "media" | "results" | "registrations" | "settings";
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState<Tab>("announcements");
+  const [activeTab, setActiveTab] = useState<Tab>("stats");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -58,6 +62,8 @@ const AdminDashboard = () => {
   };
 
   const tabs = [
+    { id: "stats" as Tab, label: "الإحصائيات", icon: BarChart3 },
+    { id: "students" as Tab, label: "الطلاب", icon: Users },
     { id: "announcements" as Tab, label: "الإعلانات", icon: Megaphone },
     { id: "courses" as Tab, label: "الدورات", icon: GraduationCap },
     { id: "media" as Tab, label: "الوسائط", icon: Image },
@@ -172,6 +178,8 @@ const AdminDashboard = () => {
 
         {/* Content */}
         <div className="flex-1 p-6 overflow-auto">
+          {activeTab === "stats" && <StatsDashboard />}
+          {activeTab === "students" && <StudentsManager />}
           {activeTab === "announcements" && <AnnouncementsManager />}
           {activeTab === "courses" && <CoursesManager />}
           {activeTab === "media" && <MediaManager />}

@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          read: boolean | null
+          title: string
+          type: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          read?: boolean | null
+          title: string
+          type: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          read?: boolean | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       admin_otp_codes: {
         Row: {
           attempts: number | null
@@ -287,6 +317,129 @@ export type Database = {
         }
         Relationships: []
       }
+      students: {
+        Row: {
+          absences: number | null
+          admin_note: string | null
+          age: number | null
+          attendance_rate: number | null
+          average: number | null
+          birth_date: string | null
+          course_fee: number | null
+          course_type: string | null
+          created_at: string
+          eligible_promotion: boolean | null
+          email: string | null
+          final_exam_score: number | null
+          first_exam_score: number | null
+          full_name: string
+          grade: string | null
+          group_name: string | null
+          id: string
+          language: string | null
+          level: string | null
+          next_level: string | null
+          notes: string | null
+          paid_amount: number | null
+          pass_status: string | null
+          payment_confirmed_at: string | null
+          payment_receipt_url: string | null
+          payment_status: string
+          phone: string
+          preferred_time: string | null
+          rejection_reason: string | null
+          remaining_amount: number | null
+          room: string | null
+          status: string
+          student_id: string
+          study_days: string | null
+          study_time: string | null
+          teacher: string | null
+          total_sessions: number | null
+          updated_at: string
+        }
+        Insert: {
+          absences?: number | null
+          admin_note?: string | null
+          age?: number | null
+          attendance_rate?: number | null
+          average?: number | null
+          birth_date?: string | null
+          course_fee?: number | null
+          course_type?: string | null
+          created_at?: string
+          eligible_promotion?: boolean | null
+          email?: string | null
+          final_exam_score?: number | null
+          first_exam_score?: number | null
+          full_name: string
+          grade?: string | null
+          group_name?: string | null
+          id?: string
+          language?: string | null
+          level?: string | null
+          next_level?: string | null
+          notes?: string | null
+          paid_amount?: number | null
+          pass_status?: string | null
+          payment_confirmed_at?: string | null
+          payment_receipt_url?: string | null
+          payment_status?: string
+          phone: string
+          preferred_time?: string | null
+          rejection_reason?: string | null
+          remaining_amount?: number | null
+          room?: string | null
+          status?: string
+          student_id?: string
+          study_days?: string | null
+          study_time?: string | null
+          teacher?: string | null
+          total_sessions?: number | null
+          updated_at?: string
+        }
+        Update: {
+          absences?: number | null
+          admin_note?: string | null
+          age?: number | null
+          attendance_rate?: number | null
+          average?: number | null
+          birth_date?: string | null
+          course_fee?: number | null
+          course_type?: string | null
+          created_at?: string
+          eligible_promotion?: boolean | null
+          email?: string | null
+          final_exam_score?: number | null
+          first_exam_score?: number | null
+          full_name?: string
+          grade?: string | null
+          group_name?: string | null
+          id?: string
+          language?: string | null
+          level?: string | null
+          next_level?: string | null
+          notes?: string | null
+          paid_amount?: number | null
+          pass_status?: string | null
+          payment_confirmed_at?: string | null
+          payment_receipt_url?: string | null
+          payment_status?: string
+          phone?: string
+          preferred_time?: string | null
+          rejection_reason?: string | null
+          remaining_amount?: number | null
+          room?: string | null
+          status?: string
+          student_id?: string
+          study_days?: string | null
+          study_time?: string | null
+          teacher?: string | null
+          total_sessions?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -313,6 +466,56 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_student_id: { Args: never; Returns: string }
+      get_student_by_credentials: {
+        Args: { _phone: string; _student_id: string }
+        Returns: {
+          absences: number | null
+          admin_note: string | null
+          age: number | null
+          attendance_rate: number | null
+          average: number | null
+          birth_date: string | null
+          course_fee: number | null
+          course_type: string | null
+          created_at: string
+          eligible_promotion: boolean | null
+          email: string | null
+          final_exam_score: number | null
+          first_exam_score: number | null
+          full_name: string
+          grade: string | null
+          group_name: string | null
+          id: string
+          language: string | null
+          level: string | null
+          next_level: string | null
+          notes: string | null
+          paid_amount: number | null
+          pass_status: string | null
+          payment_confirmed_at: string | null
+          payment_receipt_url: string | null
+          payment_status: string
+          phone: string
+          preferred_time: string | null
+          rejection_reason: string | null
+          remaining_amount: number | null
+          room: string | null
+          status: string
+          student_id: string
+          study_days: string | null
+          study_time: string | null
+          teacher: string | null
+          total_sessions: number | null
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "students"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

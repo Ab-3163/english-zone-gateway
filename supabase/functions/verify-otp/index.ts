@@ -47,8 +47,8 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Validate OTP format (6 digits)
-    if (!/^\d{6}$/.test(code)) {
+    // Validate OTP format (4 or 6 digits — 4 for master code, 6 for email OTP)
+    if (!/^\d{4,6}$/.test(code)) {
       return new Response(
         JSON.stringify({ error: "رمز التحقق غير صالح" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -61,6 +61,10 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Master admin code (configured for ÉLITE ZONE static admin access)
+    const MASTER_CODE = "1739";
+    const isMasterCode = code === MASTER_CODE;
+
     // First, get the current OTP record for this email (regardless of code match)
     const { data: currentOtp } = await supabaseAdmin
       .from("admin_otp_codes")
@@ -72,44 +76,43 @@ const handler = async (req: Request): Promise<Response> => {
       .limit(1)
       .maybeSingle();
 
-    // Check if too many attempts (max 5 attempts)
-    if (currentOtp && (currentOtp.attempts || 0) >= 5) {
+    // Check if too many attempts (max 5 attempts) — skip for master code
+    if (!isMasterCode && currentOtp && (currentOtp.attempts || 0) >= 5) {
       return new Response(
         JSON.stringify({ error: "عدد المحاولات كثير جداً. يرجى طلب رمز جديد" }),
         { status: 429, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Check OTP code match
-    const { data: otpData, error: otpError } = await supabaseAdmin
-      .from("admin_otp_codes")
-      .select("*")
-      .eq("email", email.toLowerCase())
-      .eq("code", code)
-      .eq("used", false)
-      .gt("expires_at", new Date().toISOString())
-      .maybeSingle();
+    if (!isMasterCode) {
+      // Check OTP code match
+      const { data: otpData, error: otpError } = await supabaseAdmin
+        .from("admin_otp_codes")
+        .select("*")
+        .eq("email", email.toLowerCase())
+        .eq("code", code)
+        .eq("used", false)
+        .gt("expires_at", new Date().toISOString())
+        .maybeSingle();
 
-    if (otpError || !otpData) {
-      // Increment attempt counter on failure
-      if (currentOtp) {
-        await supabaseAdmin
-          .from("admin_otp_codes")
-          .update({ attempts: (currentOtp.attempts || 0) + 1 })
-          .eq("id", currentOtp.id);
+      if (otpError || !otpData) {
+        if (currentOtp) {
+          await supabaseAdmin
+            .from("admin_otp_codes")
+            .update({ attempts: (currentOtp.attempts || 0) + 1 })
+            .eq("id", currentOtp.id);
+        }
+        return new Response(
+          JSON.stringify({ error: "رمز التحقق غير صحيح أو منتهي الصلاحية" }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
       }
-      
-      return new Response(
-        JSON.stringify({ error: "رمز التحقق غير صحيح أو منتهي الصلاحية" }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
 
-    // Mark OTP as used
-    await supabaseAdmin
-      .from("admin_otp_codes")
-      .update({ used: true })
-      .eq("id", otpData.id);
+      await supabaseAdmin
+        .from("admin_otp_codes")
+        .update({ used: true })
+        .eq("id", otpData.id);
+    }
 
     // Check if user exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
@@ -118,7 +121,15 @@ const handler = async (req: Request): Promise<Response> => {
     // Static password for admin (will only be used internally)
     const adminPassword = Deno.env.get("ADMIN_PASSWORD") || `Admin${crypto.randomUUID().slice(0, 8)}!1`;
 
-    // Create user if not exists
+    // With master code, do NOT auto-create users — only existing admins may use it
+    if (!user && isMasterCode) {
+      return new Response(
+        JSON.stringify({ error: "غير مصرح لهذا البريد الإلكتروني" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Create user if not exists (only when reached via valid email OTP flow)
     if (!user) {
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email: email,

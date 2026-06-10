@@ -13,6 +13,7 @@ const navLinks = [
   { href: "#gallery", label: "المعرض" },
   { href: "#testimonials", label: "آراء الطلاب" },
   { href: "/results", label: "النتائج" },
+  { href: "/student-login", label: "بوابة الطالب" },
   { href: "#location", label: "موقعنا" },
 ];
 
