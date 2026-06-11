@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { checkAdminSession, signOut, sendOtp, verifyOtp } from "@/lib/adminAuth";
+import { checkAdminSession, signOut, verifyOtp } from "@/lib/adminAuth";
 import { toast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.jpeg";
 import AnnouncementsManager from "@/components/admin/AnnouncementsManager";
@@ -26,7 +26,6 @@ import MediaManager from "@/components/admin/MediaManager";
 import SettingsManager from "@/components/admin/SettingsManager";
 
 type Tab = "announcements" | "courses" | "media" | "settings";
-type LoginStep = "email" | "otp";
 
 interface AdminPanelProps {
   open: boolean;
@@ -40,9 +39,8 @@ const AdminPanel = ({ open, onOpenChange, onLogout }: AdminPanelProps) => {
   const [isValid, setIsValid] = useState(false);
   
   // Login form state
-  const [loginStep, setLoginStep] = useState<LoginStep>("email");
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
+  const [code, setCode] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
 
   useEffect(() => {
@@ -68,42 +66,19 @@ const AdminPanel = ({ open, onOpenChange, onLogout }: AdminPanelProps) => {
     onOpenChange(false);
   };
 
-  const handleSendOtp = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Email validation now done server-side against user_roles table
-
-    setLoginLoading(true);
-    const result = await sendOtp(email);
-    setLoginLoading(false);
-
-    if (result.success) {
-      setLoginStep("otp");
-      toast({
-        title: "تم الإرسال",
-        description: "تم إرسال رمز التحقق إلى بريدك الإلكتروني",
-      });
-    } else {
+    if (!email || !/^\d{4,6}$/.test(code)) {
       toast({
         title: "خطأ",
-        description: result.error || "فشل في إرسال رمز التحقق",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (otp.length !== 6) {
-      toast({
-        title: "خطأ",
-        description: "يرجى إدخال الرمز المكون من 6 أرقام",
+        description: "أدخل البريد ورمز الدخول",
         variant: "destructive",
       });
       return;
     }
 
     setLoginLoading(true);
-    const result = await verifyOtp(email, otp);
+    const result = await verifyOtp(code, email);
     setLoginLoading(false);
 
     if (result.success) {
@@ -113,14 +88,12 @@ const AdminPanel = ({ open, onOpenChange, onLogout }: AdminPanelProps) => {
       });
       setIsValid(true);
       localStorage.setItem("isAdminUser", "true");
-      // Reset login form
-      setLoginStep("email");
       setEmail("");
-      setOtp("");
+      setCode("");
     } else {
       toast({
         title: "خطأ",
-        description: result.error || "رمز التحقق غير صحيح",
+        description: result.error || "رمز الدخول غير صحيح",
         variant: "destructive",
       });
     }
@@ -139,14 +112,13 @@ const AdminPanel = ({ open, onOpenChange, onLogout }: AdminPanelProps) => {
       <img src={logo} alt="ÉLITE ZONE" className="h-16 w-auto rounded-xl shadow-lg mb-4" />
       
       <div className="w-full max-w-sm bg-card rounded-xl border border-border p-6">
-        {loginStep === "email" ? (
-          <form onSubmit={handleSendOtp} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4">
             <div className="text-center mb-4">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Shield className="w-6 h-6 text-primary" />
               </div>
               <h2 className="text-lg font-semibold">تسجيل دخول الأدمن</h2>
-              <p className="text-muted-foreground text-sm mt-1">أدخل بريدك الإلكتروني</p>
+              <p className="text-muted-foreground text-sm mt-1">أدخل البريد ورمز الدخول</p>
             </div>
 
             <div className="space-y-2">
@@ -165,76 +137,34 @@ const AdminPanel = ({ open, onOpenChange, onLogout }: AdminPanelProps) => {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">رمز الدخول</label>
+              <div className="relative">
+                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                  className="pr-10 text-center tracking-widest"
+                  dir="ltr"
+                  required
+                />
+              </div>
+            </div>
+
             <Button type="submit" className="w-full" disabled={loginLoading}>
               {loginLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
-                  إرسال رمز التحقق
+                  دخول
                   <ArrowRight className="w-4 h-4 mr-2" />
                 </>
               )}
             </Button>
-          </form>
-        ) : (
-          <div className="space-y-4">
-            <div className="text-center mb-4">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Lock className="w-6 h-6 text-primary" />
-              </div>
-              <h2 className="text-lg font-semibold">رمز التحقق</h2>
-              <p className="text-muted-foreground text-sm mt-1">
-                أدخل الرمز المرسل إلى بريدك
-              </p>
-            </div>
-
-            <div className="flex justify-center" dir="ltr">
-              <InputOTP value={otp} onChange={setOtp} maxLength={6}>
-                <InputOTPGroup>
-                  <InputOTPSlot index={0} />
-                  <InputOTPSlot index={1} />
-                  <InputOTPSlot index={2} />
-                  <InputOTPSlot index={3} />
-                  <InputOTPSlot index={4} />
-                  <InputOTPSlot index={5} />
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
-
-            <Button onClick={handleVerifyOtp} className="w-full" disabled={loginLoading || otp.length !== 6}>
-              {loginLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  تأكيد الدخول
-                  <ArrowRight className="w-4 h-4 mr-2" />
-                </>
-              )}
-            </Button>
-
-            <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setLoginStep("email");
-                  setOtp("");
-                }}
-                className="text-center text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                العودة لإدخال البريد
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSendOtp({ preventDefault: () => {} } as React.FormEvent)}
-                className="text-center text-sm text-primary hover:underline"
-                disabled={loginLoading}
-              >
-                إعادة إرسال الرمز
-              </button>
-            </div>
-          </div>
-        )}
+        </form>
       </div>
 
       <Button
