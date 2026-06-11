@@ -15,7 +15,7 @@ const getCorsHeaders = (req: Request) => {
 };
 
 interface VerifyOtpRequest {
-  email: string;
+  email?: string;
   code: string;
   deviceId: string;
 }
@@ -28,21 +28,11 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, code, deviceId }: VerifyOtpRequest = await req.json();
+    const { email: rawEmail, code, deviceId }: VerifyOtpRequest = await req.json();
 
-    // Validate input
-    if (!email || !code || !deviceId) {
+    if (!code || !deviceId) {
       return new Response(
         JSON.stringify({ error: "بيانات غير كاملة" }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return new Response(
-        JSON.stringify({ error: "بريد إلكتروني غير صالح" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
@@ -64,6 +54,48 @@ const handler = async (req: Request): Promise<Response> => {
     // Master admin code (configured for ÉLITE ZONE static admin access)
     const MASTER_CODE = "1739";
     const isMasterCode = code === MASTER_CODE;
+
+    let email = (rawEmail || "").toLowerCase().trim();
+
+    // If using master code without email, resolve the first admin in user_roles
+    if (isMasterCode && !email) {
+      const { data: adminRole } = await supabaseAdmin
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin")
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (!adminRole) {
+        return new Response(
+          JSON.stringify({ error: "لا يوجد حساب أدمن مهيأ" }),
+          { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+      const { data: adminUser } = await supabaseAdmin.auth.admin.getUserById(adminRole.user_id);
+      if (!adminUser?.user?.email) {
+        return new Response(
+          JSON.stringify({ error: "تعذر العثور على بريد الأدمن" }),
+          { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+      email = adminUser.user.email.toLowerCase();
+    }
+
+    if (!email) {
+      return new Response(
+        JSON.stringify({ error: "بيانات غير كاملة" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return new Response(
+        JSON.stringify({ error: "بريد إلكتروني غير صالح" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     // First, get the current OTP record for this email (regardless of code match)
     const { data: currentOtp } = await supabaseAdmin
