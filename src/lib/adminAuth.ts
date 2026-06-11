@@ -70,7 +70,7 @@ export const sendOtp = async (email: string): Promise<{ success: boolean; error?
 };
 
 // Verify OTP and create session
-export const verifyOtp = async (email: string, code: string): Promise<{ success: boolean; error?: string }> => {
+export const verifyOtp = async (code: string, email?: string): Promise<{ success: boolean; error?: string }> => {
   try {
     const deviceId = getDeviceId();
     
@@ -125,7 +125,7 @@ export const verifyOtp = async (email: string, code: string): Promise<{ success:
         expires: response.data.sessionExpires,
         deviceId,
         userId: response.data.userId,
-        email: email.toLowerCase(),
+        email: (response.data?.email || email || "").toLowerCase(),
         createdAt: new Date().toISOString(),
       };
       localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
