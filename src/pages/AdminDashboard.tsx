@@ -14,7 +14,13 @@ import {
   ClipboardList,
   FileSpreadsheet,
   Users,
-  BarChart3
+  BarChart3,
+  Home,
+  CreditCard,
+  CalendarCheck,
+  Layers,
+  Award,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { checkAdminSession, signOut } from "@/lib/adminAuth";
@@ -28,6 +34,7 @@ import ResultsManager from "@/components/admin/ResultsManager";
 import RegistrationsManager from "@/components/admin/RegistrationsManager";
 import StudentsManager from "@/components/admin/StudentsManager";
 import StatsDashboard from "@/components/admin/StatsDashboard";
+import { supabase } from "@/integrations/supabase/client";
 
 type Tab = "stats" | "students" | "announcements" | "courses" | "media" | "results" | "registrations" | "settings";
 
