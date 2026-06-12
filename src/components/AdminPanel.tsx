@@ -49,7 +49,7 @@ const AdminPanel = ({ open, onOpenChange, onLogout }: AdminPanelProps) => {
         const { valid } = await checkAdminSession();
         if (valid) {
           onOpenChange(false);
-          navigate("/admin-dashboard");
+          navigate("/admin/dashboard");
           return;
         }
         setIsValid(false);
@@ -93,7 +93,7 @@ const AdminPanel = ({ open, onOpenChange, onLogout }: AdminPanelProps) => {
       localStorage.setItem("isAdminUser", "true");
       setCode("");
       onOpenChange(false);
-      navigate("/admin-dashboard");
+      navigate("/admin/dashboard");
     } else {
       toast({
         title: "خطأ",
