@@ -105,32 +105,32 @@ const StudentsManager = () => {
   return (
     <div className="space-y-4">
       <div className="flex gap-2 flex-wrap items-center">
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative flex-1 min-w-full sm:min-w-[200px]">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="بحث: رقم الطالب، الاسم، الهاتف، القسم..." value={search} onChange={(e) => setSearch(e.target.value)} className="pr-9" />
+          <Input placeholder="بحث: رقم الطالب، الاسم، الهاتف..." value={search} onChange={(e) => setSearch(e.target.value)} className="pr-9" />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="الحالة" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[160px] flex-1 sm:flex-none"><SelectValue placeholder="الحالة" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">كل الحالات</SelectItem>
             {STATUS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={payFilter} onValueChange={setPayFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="حالة الدفع" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[160px] flex-1 sm:flex-none"><SelectValue placeholder="حالة الدفع" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">كل المدفوعات</SelectItem>
             {PAY_STATUS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={levelFilter} onValueChange={setLevelFilter}>
-          <SelectTrigger className="w-[120px]"><SelectValue placeholder="المستوى" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[120px] flex-1 sm:flex-none"><SelectValue placeholder="المستوى" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">كل المستويات</SelectItem>
             {["A1","A2","B1","B2","C1"].map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Button onClick={() => setEditing({ ...empty })}><Plus className="w-4 h-4 ml-1" /> إضافة طالب</Button>
+        <Button onClick={() => setEditing({ ...empty })} className="w-full sm:w-auto"><Plus className="w-4 h-4 ml-1" /> إضافة طالب</Button>
       </div>
 
       {loading ? <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin" /></div> : (
