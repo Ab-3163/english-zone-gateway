@@ -42,6 +42,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<Tab>("stats");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [pendingCount, setPendingCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,6 +60,17 @@ const AdminDashboard = () => {
     checkSession();
   }, [navigate]);
 
+  useEffect(() => {
+    const loadPending = async () => {
+      const { count } = await supabase.from("students").select("id", { count: "exact", head: true })
+        .eq("status", "awaiting_confirmation");
+      setPendingCount(count || 0);
+    };
+    loadPending();
+    const interval = setInterval(loadPending, 15000);
+    return () => clearInterval(interval);
+  }, [activeTab]);
+
   const handleLogout = async () => {
     await signOut();
     toast({
@@ -69,13 +81,13 @@ const AdminDashboard = () => {
   };
 
   const tabs = [
-    { id: "stats" as Tab, label: "الإحصائيات", icon: BarChart3 },
+    { id: "stats" as Tab, label: "الرئيسية", icon: Home },
     { id: "students" as Tab, label: "الطلاب", icon: Users },
+    { id: "registrations" as Tab, label: "الطلبات الجديدة", icon: ClipboardList, badge: pendingCount },
     { id: "announcements" as Tab, label: "الإعلانات", icon: Megaphone },
     { id: "courses" as Tab, label: "الدورات", icon: GraduationCap },
     { id: "media" as Tab, label: "الوسائط", icon: Image },
-    { id: "results" as Tab, label: "نتائج الطلاب", icon: FileSpreadsheet },
-    { id: "registrations" as Tab, label: "طلبات التسجيل", icon: ClipboardList },
+    { id: "results" as Tab, label: "النتائج", icon: FileSpreadsheet },
     { id: "settings" as Tab, label: "الإعدادات", icon: Settings },
   ];
 
