@@ -40,7 +40,7 @@ type Tab = "stats" | "students" | "announcements" | "courses" | "media" | "resul
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<Tab>("stats");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== "undefined" && window.innerWidth >= 768);
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const navigate = useNavigate();
@@ -105,19 +105,26 @@ const AdminDashboard = () => {
       <aside className={`
         fixed md:static inset-y-0 right-0 z-50
         ${sidebarOpen ? "translate-x-0" : "translate-x-full md:translate-x-0"}
-        w-64 bg-[#0f1e3d] text-white border-l border-[#1e3a6f]
+        w-72 md:w-64 bg-[#0f1e3d] text-white border-l border-[#1e3a6f]
         transition-transform duration-300
         flex flex-col
       `}>
         {/* Logo */}
-        <div className="p-6 border-b border-[#1e3a6f]">
+        <div className="p-4 md:p-6 border-b border-[#1e3a6f] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="ÉLITE ZONE" className="h-12 w-auto rounded-lg" />
+            <img src={logo} alt="ÉLITE ZONE" className="h-10 md:h-12 w-auto rounded-lg" />
             <div>
-              <h1 className="font-bold text-white">ÉLITE ZONE</h1>
+              <h1 className="font-bold text-white text-sm md:text-base">ÉLITE ZONE</h1>
               <p className="text-xs text-white/60">لوحة الإدارة</p>
             </div>
           </div>
+          <button
+            className="md:hidden p-2 rounded-lg hover:bg-white/10 text-white"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="إغلاق"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Navigation */}
@@ -177,34 +184,37 @@ const AdminDashboard = () => {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-screen">
+      <main className="flex-1 flex flex-col min-h-screen min-w-0">
         {/* Header */}
-        <header className="bg-[#0f1e3d] text-white border-b border-[#1e3a6f] px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <header className="bg-[#0f1e3d] text-white border-b border-[#1e3a6f] px-3 md:px-6 py-3 md:py-4 flex items-center justify-between gap-2 sticky top-0 z-30">
+          <div className="flex items-center gap-2 md:gap-4 min-w-0">
             <button
-              className="md:hidden p-2 rounded-lg hover:bg-white/10"
+              className="md:hidden p-2 rounded-lg hover:bg-white/10 shrink-0"
               onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label="القائمة"
             >
               {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
-            <div className="flex items-center gap-2">
-              <LayoutDashboard className="w-6 h-6 text-primary" />
-              <h2 className="text-xl font-bold text-white">
-                لوحة الإدارة – {tabs.find(t => t.id === activeTab)?.label}
+            <div className="flex items-center gap-2 min-w-0">
+              <LayoutDashboard className="w-5 h-5 md:w-6 md:h-6 text-primary shrink-0" />
+              <h2 className="text-base md:text-xl font-bold text-white truncate">
+                <span className="hidden sm:inline">لوحة الإدارة – </span>
+                {tabs.find(t => t.id === activeTab)?.label}
               </h2>
             </div>
           </div>
           <a 
             href="/" 
             target="_blank" 
-            className="text-sm text-white/70 hover:text-white transition-colors"
+            className="text-xs md:text-sm text-white/70 hover:text-white transition-colors whitespace-nowrap shrink-0"
           >
-            عرض الموقع ←
+            <span className="hidden sm:inline">عرض الموقع ←</span>
+            <span className="sm:hidden">الموقع ←</span>
           </a>
         </header>
 
         {/* Content */}
-        <div className="flex-1 p-6 overflow-auto">
+        <div className="flex-1 p-3 sm:p-4 md:p-6 overflow-auto">
           {activeTab === "stats" && <StatsDashboard />}
           {activeTab === "students" && <StudentsManager />}
           {activeTab === "announcements" && <AnnouncementsManager />}
