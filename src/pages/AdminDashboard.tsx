@@ -14,7 +14,13 @@ import {
   ClipboardList,
   FileSpreadsheet,
   Users,
-  BarChart3
+  BarChart3,
+  Home,
+  CreditCard,
+  CalendarCheck,
+  Layers,
+  Award,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { checkAdminSession, signOut } from "@/lib/adminAuth";
@@ -28,6 +34,7 @@ import ResultsManager from "@/components/admin/ResultsManager";
 import RegistrationsManager from "@/components/admin/RegistrationsManager";
 import StudentsManager from "@/components/admin/StudentsManager";
 import StatsDashboard from "@/components/admin/StatsDashboard";
+import { supabase } from "@/integrations/supabase/client";
 
 type Tab = "stats" | "students" | "announcements" | "courses" | "media" | "results" | "registrations" | "settings";
 
@@ -35,6 +42,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<Tab>("stats");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [pendingCount, setPendingCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,6 +60,17 @@ const AdminDashboard = () => {
     checkSession();
   }, [navigate]);
 
+  useEffect(() => {
+    const loadPending = async () => {
+      const { count } = await supabase.from("students").select("id", { count: "exact", head: true })
+        .eq("status", "awaiting_confirmation");
+      setPendingCount(count || 0);
+    };
+    loadPending();
+    const interval = setInterval(loadPending, 15000);
+    return () => clearInterval(interval);
+  }, [activeTab]);
+
   const handleLogout = async () => {
     await signOut();
     toast({
@@ -62,13 +81,13 @@ const AdminDashboard = () => {
   };
 
   const tabs = [
-    { id: "stats" as Tab, label: "الإحصائيات", icon: BarChart3 },
+    { id: "stats" as Tab, label: "الرئيسية", icon: Home },
     { id: "students" as Tab, label: "الطلاب", icon: Users },
+    { id: "registrations" as Tab, label: "الطلبات الجديدة", icon: ClipboardList, badge: pendingCount },
     { id: "announcements" as Tab, label: "الإعلانات", icon: Megaphone },
     { id: "courses" as Tab, label: "الدورات", icon: GraduationCap },
     { id: "media" as Tab, label: "الوسائط", icon: Image },
-    { id: "results" as Tab, label: "نتائج الطلاب", icon: FileSpreadsheet },
-    { id: "registrations" as Tab, label: "طلبات التسجيل", icon: ClipboardList },
+    { id: "results" as Tab, label: "النتائج", icon: FileSpreadsheet },
     { id: "settings" as Tab, label: "الإعدادات", icon: Settings },
   ];
 
@@ -81,30 +100,31 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex" dir="rtl">
+    <div className="min-h-screen bg-slate-100 dark:bg-background flex" dir="rtl">
       {/* Sidebar */}
       <aside className={`
         fixed md:static inset-y-0 right-0 z-50
         ${sidebarOpen ? "translate-x-0" : "translate-x-full md:translate-x-0"}
-        w-64 bg-card border-l border-border
+        w-64 bg-[#0f1e3d] text-white border-l border-[#1e3a6f]
         transition-transform duration-300
         flex flex-col
       `}>
         {/* Logo */}
-        <div className="p-6 border-b border-border">
+        <div className="p-6 border-b border-[#1e3a6f]">
           <div className="flex items-center gap-3">
             <img src={logo} alt="ÉLITE ZONE" className="h-12 w-auto rounded-lg" />
             <div>
-              <h1 className="font-bold text-foreground">ÉLITE ZONE</h1>
-              <p className="text-xs text-muted-foreground">لوحة التحكم</p>
+              <h1 className="font-bold text-white">ÉLITE ZONE</h1>
+              <p className="text-xs text-white/60">لوحة الإدارة</p>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {tabs.map((tab) => {
             const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
@@ -113,26 +133,33 @@ const AdminDashboard = () => {
                   setSidebarOpen(false);
                 }}
                 className={`
-                  w-full flex items-center gap-3 px-4 py-3 rounded-xl
+                  w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg
                   transition-all duration-200
-                  ${activeTab === tab.id 
-                    ? "bg-primary text-primary-foreground shadow-lg" 
-                    : "text-foreground/70 hover:bg-muted hover:text-foreground"
+                  ${isActive
+                    ? "bg-primary text-white shadow-lg"
+                    : "text-white/70 hover:bg-white/5 hover:text-white"
                   }
                 `}
               >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{tab.label}</span>
+                <div className="flex items-center gap-3">
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium text-sm">{tab.label}</span>
+                </div>
+                {(tab as any).badge > 0 && (
+                  <span className="bg-primary text-white text-xs font-bold rounded-full min-w-[22px] h-[22px] flex items-center justify-center px-1.5">
+                    {(tab as any).badge}
+                  </span>
+                )}
               </button>
             );
           })}
         </nav>
 
         {/* Logout */}
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-[#1e3a6f]">
           <Button
             variant="ghost"
-            className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
+            className="w-full justify-start gap-3 text-red-300 hover:text-red-200 hover:bg-red-500/10"
             onClick={handleLogout}
           >
             <LogOut className="w-5 h-5" />
@@ -152,25 +179,25 @@ const AdminDashboard = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-h-screen">
         {/* Header */}
-        <header className="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
+        <header className="bg-[#0f1e3d] text-white border-b border-[#1e3a6f] px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              className="md:hidden p-2 rounded-lg hover:bg-muted"
+              className="md:hidden p-2 rounded-lg hover:bg-white/10"
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
               {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
             <div className="flex items-center gap-2">
               <LayoutDashboard className="w-6 h-6 text-primary" />
-              <h2 className="text-xl font-bold text-foreground">
-                {tabs.find(t => t.id === activeTab)?.label}
+              <h2 className="text-xl font-bold text-white">
+                لوحة الإدارة – {tabs.find(t => t.id === activeTab)?.label}
               </h2>
             </div>
           </div>
           <a 
             href="/" 
             target="_blank" 
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            className="text-sm text-white/70 hover:text-white transition-colors"
           >
             عرض الموقع ←
           </a>
