@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
   Megaphone, 
@@ -35,6 +36,7 @@ const AdminPanel = ({ open, onOpenChange, onLogout }: AdminPanelProps) => {
   const [activeTab, setActiveTab] = useState<Tab>("announcements");
   const [loading, setLoading] = useState(true);
   const [isValid, setIsValid] = useState(false);
+  const navigate = useNavigate();
   
   // Login form state
   const [code, setCode] = useState("");
@@ -45,12 +47,17 @@ const AdminPanel = ({ open, onOpenChange, onLogout }: AdminPanelProps) => {
       const checkSession = async () => {
         setLoading(true);
         const { valid } = await checkAdminSession();
-        setIsValid(valid);
+        if (valid) {
+          onOpenChange(false);
+          navigate("/admin-dashboard");
+          return;
+        }
+        setIsValid(false);
         setLoading(false);
       };
       checkSession();
     }
-  }, [open]);
+  }, [open, navigate, onOpenChange]);
 
   const handleLogout = async () => {
     await signOut();
@@ -83,9 +90,10 @@ const AdminPanel = ({ open, onOpenChange, onLogout }: AdminPanelProps) => {
         title: "تم التحقق",
         description: "مرحباً بك في لوحة التحكم",
       });
-      setIsValid(true);
       localStorage.setItem("isAdminUser", "true");
       setCode("");
+      onOpenChange(false);
+      navigate("/admin-dashboard");
     } else {
       toast({
         title: "خطأ",
