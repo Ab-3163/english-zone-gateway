@@ -128,6 +128,59 @@ export type Database = {
         }
         Relationships: []
       }
+      certificates: {
+        Row: {
+          certificate_number: string
+          course: string
+          created_at: string
+          full_name: string
+          grade: string | null
+          id: string
+          level: string | null
+          pass_date: string
+          result_id: string | null
+          score: number | null
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          certificate_number?: string
+          course: string
+          created_at?: string
+          full_name: string
+          grade?: string | null
+          id?: string
+          level?: string | null
+          pass_date?: string
+          result_id?: string | null
+          score?: number | null
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          certificate_number?: string
+          course?: string
+          created_at?: string
+          full_name?: string
+          grade?: string | null
+          id?: string
+          level?: string | null
+          pass_date?: string
+          result_id?: string | null
+          score?: number | null
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificates_result_id_fkey"
+            columns: ["result_id"]
+            isOneToOne: false
+            referencedRelation: "student_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           created_at: string
@@ -466,6 +519,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_certificate_number: { Args: never; Returns: string }
       generate_student_id: { Args: never; Returns: string }
       get_student_by_credentials: {
         Args: { _phone: string; _student_id: string }
