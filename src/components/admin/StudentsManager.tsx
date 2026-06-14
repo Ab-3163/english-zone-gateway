@@ -134,7 +134,43 @@ const StudentsManager = () => {
       </div>
 
       {loading ? <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin" /></div> : (
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <>
+        {/* Mobile cards */}
+        <div className="md:hidden space-y-3">
+          {filtered.length === 0 && <div className="bg-card border rounded-2xl p-8 text-center text-muted-foreground">لا توجد نتائج</div>}
+          {filtered.map((s) => (
+            <div key={s.id} className="bg-card border rounded-2xl p-4 shadow-sm space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-bold text-sm truncate">{s.full_name}</h3>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-mono" dir="ltr">{s.student_id}</p>
+                </div>
+                <Badge variant={s.status === "registered" ? "default" : "outline"} className="text-xs shrink-0">{s.status}</Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                <div><span className="text-muted-foreground">الهاتف: </span><span dir="ltr">{s.phone}</span></div>
+                <div><span className="text-muted-foreground">المستوى: </span>{s.level || "—"}</div>
+                <div><span className="text-muted-foreground">اللغة: </span>{s.language}</div>
+                <div><span className="text-muted-foreground">الدفع: </span>
+                  <Badge variant={s.payment_status === "confirmed" ? "default" : "secondary"} className="text-[10px] h-4">{s.payment_status}</Badge>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                <Button size="sm" variant="outline" onClick={() => setEditing(s)} className="h-8 flex-1 min-w-[70px] gap-1"><Pencil className="w-3.5 h-3.5" /> تعديل</Button>
+                <Button size="sm" variant="outline" onClick={() => wa(s.phone)} className="h-8 text-green-700 border-green-200"><MessageCircle className="w-4 h-4" /></Button>
+                {s.payment_status !== "confirmed" && (
+                  <Button size="sm" onClick={() => setStatus(s.id, { payment_status: "confirmed", status: "registered", payment_confirmed_at: new Date().toISOString() })} className="h-8 bg-green-600 hover:bg-green-700 text-white"><Check className="w-4 h-4" /></Button>
+                )}
+                <Button size="sm" variant="outline" onClick={() => remove(s.id)} className="h-8 text-destructive border-destructive/20"><Trash2 className="w-4 h-4" /></Button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
@@ -176,6 +212,7 @@ const StudentsManager = () => {
             </table>
           </div>
         </div>
+      </>
       )}
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
