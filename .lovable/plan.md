@@ -1,58 +1,47 @@
-## نظام تسجيل ودخول الطلاب الكامل
+## Goal
+Overhaul ÉLITE ZONE admin dashboard: modern Navy/Red/White/Gray design, fully mobile-responsive (cards instead of tables), with automated workflow: Registration → Accept → Student → Result → Auto-Certificate.
 
-### 1) قاعدة البيانات (Migration)
+## Design tokens (index.css + tailwind)
+- `--admin-navy: 218 76% 17%` (#0B1F4D)
+- `--admin-red: 0 84% 60%` (#EF4444)
+- `--admin-gray: 220 14% 96%` (#F3F4F6)
+- Smooth transitions, hover lift, rounded-2xl cards, soft shadows.
 
-**جدول `students`** (الجدول الرئيسي):
-- `id` (uuid), `student_id` (text فريد بصيغة EZ-2026-0001)
-- بيانات شخصية: `full_name`, `phone`, `email`, `birth_date`, `age`
-- بيانات دراسية: `language`, `level`, `group_name`, `teacher`, `study_days`, `study_time`, `room`, `course_type`
-- مالية: `course_fee`, `paid_amount`, `remaining_amount`, `payment_status`, `payment_receipt_url`, `payment_confirmed_at`
-- نتائج: `first_exam_score`, `final_exam_score`, `average`, `grade`, `pass_status`, `admin_note`, `next_level`, `eligible_promotion`
-- حضور: `total_sessions`, `absences`, `attendance_rate`
-- حالة: `status` (new/awaiting_payment/awaiting_confirmation/registered/rejected/suspended)
-- `preferred_time`, `notes`, `rejection_reason`
+## Layout shell (`AdminDashboard.tsx`)
+- **Sidebar**: fixed width (w-64 desktop, slide-over on mobile), navy bg, item icons + live counters (students, new registrations, courses, results, certificates) loaded via parallel `count` queries every 20s, polished logout button at bottom.
+- **Header**: smaller logo, centered page title, bell notification icon (badge = pending count), refined hamburger.
+- **Content**: gray bg, padded.
 
-**Sequence** `student_id_seq_2026` + دالة `generate_student_id()` لإنشاء `EZ-YYYY-NNNN`.
+## Pages
+1. **Dashboard (Home)**: 5 stat cards (Students, New Registrations, Courses, Results, Certificates) with icons + tiny sparkline/progress bar. Replaces current `StatsDashboard`.
+2. **Registrations**: 
+   - Desktop: table. Mobile (`md:hidden`): Card per request with name, phone, course, date, status badge + buttons (Accept / Reject / Delete / WhatsApp).
+   - **Accept logic**: insert into `students` (auto `EZ-YYYY-NNNN` via existing `generate_student_id()`), set registration `status='confirmed'`, toast + refresh.
+3. **Students**: Card layout on mobile (name, student_id, phone, course, level, status badge + Edit / Results / Attendance / Certificate / Delete / WhatsApp buttons). Table preserved on desktop.
+4. **Results**: form picks an existing student (autocomplete by name/phone/student_id), saves result linked by `student_id`. Auto-compute `status = score >= 50 ? 'pass' : 'fail'`. On pass → auto-insert certificate row.
+5. **Certificates** (new tab): list certificates with student name, course, level, pass date, cert number `CERT-YYYY-NNNN`.
+6. **Courses**: card grid (image, description, students count, levels count). Limited to English / French / Informatics.
+7. Global instant search (name / phone / student_id) on each list page.
 
-**Storage bucket** `payment-receipts` (خاص) لرفع وصولات الدفع.
+## Database changes (one migration)
+- New table `public.certificates` (student_id FK, course, level, score, pass_date, certificate_number unique, created_at). Sequence `certificate_seq` + `generate_certificate_number()`. RLS: admin all; public select by certificate_number (for verification). GRANTs included.
+- Trigger on `student_results` after insert/update: if `score >= 50` and no certificate exists → insert into `certificates`, also update `students.pass_status='pass'`. If `< 50` → `pass_status='fail'`.
+- Add `notification` count helper (use existing `admin_notifications`).
 
-**RLS:**
-- إدراج عام للتسجيل الجديد (anon + authenticated)
-- قراءة بواسطة دالة `get_student_by_credentials(student_id, phone)` فقط — لا قراءة مباشرة
-- الإدارة (`has_role admin`) كاملة الصلاحيات
+## Files to touch
+- `src/index.css`, `tailwind.config.ts` — admin tokens
+- `src/pages/AdminDashboard.tsx` — header (logo, title, bell), sidebar counters, add Certificates tab
+- `src/components/admin/StatsDashboard.tsx` — 5 main cards redesign
+- `src/components/admin/RegistrationsManager.tsx` — mobile cards + Accept→create student + WhatsApp
+- `src/components/admin/StudentsManager.tsx` — mobile cards + WhatsApp + Certificate button
+- `src/components/admin/ResultsManager.tsx` — student picker, auto pass/fail
+- `src/components/admin/CertificatesManager.tsx` — NEW
+- `src/components/admin/CoursesManager.tsx` — card grid polish
+- New migration for `certificates` + trigger
 
-**جدول `admin_notifications`** لسجل التنبيهات.
+## Out of scope (confirm if you want them now)
+- Attendance tracking system (button placeholder only — no schema)
+- Certificate PDF generation/download (text record only for now)
+- Editing/redesigning Announcements / Media / Settings pages (kept as-is functionally; only inherit new tokens)
 
-### 2) Edge Functions
-
-- **`notify-admin-registration`**: يرسل إيميل عبر Resend للأدمن عند تسجيل جديد بكل التفاصيل + رابط اللوحة.
-- تعديل **`send-otp`**: قبول الكود الثابت `1739` كبديل دائم للأدمن (بدون OTP حقيقي إذا طُلب).
-
-### 3) الواجهة الأمامية
-
-**صفحات جديدة:**
-- `/student-register` — نموذج تسجيل احترافي + رفع وصل الدفع، يعرض Student ID بعد النجاح
-- `/student-login` — Student ID + رقم الهاتف
-- `/student-portal` — لوحة الطالب الشخصية
-
-**تعديل صفحة `/admin`:** تسجيل دخول بالإيميل + الكود الثابت `1739` (بدلاً من OTP عبر الإيميل).
-
-**لوحة الإدارة - تبويبات جديدة:**
-- **Dashboard**: إحصائيات (عدد الطلاب، النشطين، الجدد، المعلقين، الإيرادات، الناجحين/الراسبين، توزيع حسب المستوى/القسم)
-- **إدارة الطلاب**: جدول كامل + بحث وفلترة + إجراءات سريعة (تأكيد/رفض الدفع، تعديل، نتيجة، نقل مستوى، واتساب، طباعة بطاقة)
-- إضافة طالب يدويًا (للقدامى)
-- نموذج تعديل تفصيلي
-
-### 4) التنبيهات
-- Toast عند النجاح/الخطأ
-- إيميل تلقائي للأدمن عند كل تسجيل جديد
-
-### تفاصيل تقنية
-- RTL + Cairo + ألوان ÉLITE ZONE
-- Zod validation، حماية spam (cooldown 5s)
-- React Query للجلب
-- `framer-motion` للحركات الخفيفة
-- ملف Migration واحد شامل
-
-### ملاحظة
-نظام التسجيل القديم (`registrations`) يبقى منفصلًا (طلبات الاستفسار) — `students` للطلاب المُسجَّلين فعلياً. سأضيف زر "ترقية إلى طالب" في `RegistrationsManager` لتحويل الطلب إلى طالب رسمي.
+Proceed?
