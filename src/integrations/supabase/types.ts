@@ -577,6 +577,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      list_published_results: {
+        Args: { _query?: string }
+        Returns: {
+          admin_note: string
+          course: string
+          full_name: string
+          grade: string
+          level: string
+          score: number
+          status: string
+          student_id: string
+        }[]
+      }
       search_student_result: {
         Args: { _query: string }
         Returns: {
