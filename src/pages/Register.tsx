@@ -65,6 +65,16 @@ const Register = () => {
       toast({ title: "خطأ", description: "تعذّر إرسال الطلب، حاول مجدداً", variant: "destructive" });
       return;
     }
+    // Fire-and-forget WhatsApp notification to admin
+    supabase.functions.invoke("notify-whatsapp-registration", {
+      body: {
+        full_name: parsed.data.full_name,
+        phone: parsed.data.phone,
+        language: parsed.data.language,
+        level: parsed.data.level,
+        created_at: new Date().toISOString(),
+      },
+    }).catch(() => {});
     setDone(true);
     toast({ title: "تم", description: "تم استلام طلب التسجيل بنجاح" });
   };

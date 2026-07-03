@@ -87,6 +87,16 @@ const StudentRegister = () => {
     supabase.functions.invoke("notify-admin-registration", {
       body: { ...data, has_receipt: !!receiptUrl },
     }).catch(() => {});
+    // Fire-and-forget WhatsApp notification to admin
+    supabase.functions.invoke("notify-whatsapp-registration", {
+      body: {
+        full_name: data.full_name,
+        phone: data.phone,
+        language: data.language,
+        level: data.level,
+        created_at: new Date().toISOString(),
+      },
+    }).catch(() => {});
 
     setSubmitting(false);
     setResult({ student_id: data.student_id });
