@@ -2,7 +2,7 @@ import heroBg from "@/assets/hero-bg.jpg";
 import logo from "@/assets/logo.jpeg";
 import ParticlesBackground from "./ParticlesBackground";
 import CountUpNumber from "./CountUpNumber";
-import { ChevronDown, Sparkles } from "lucide-react";
+import { ChevronDown, Sparkles, Award, GraduationCap, Users, BookOpen } from "lucide-react";
 
 const Hero = () => {
   return (
@@ -33,19 +33,19 @@ const Hero = () => {
           </div>
           
           {/* Logo */}
-          <div className="mb-8 animate-float">
+          <div className="mb-6 md:mb-10 animate-float">
             <div className="relative inline-block">
               <img 
                 src={logo} 
                 alt="ÉLITE ZONE" 
-                className="h-32 md:h-40 w-auto mx-auto rounded-2xl shadow-2xl animate-pulse-glow"
+                className="h-40 sm:h-48 md:h-56 lg:h-64 w-auto mx-auto rounded-3xl shadow-2xl animate-pulse-glow ring-2 ring-white/20"
               />
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary to-primary/50 rounded-2xl blur opacity-30 -z-10" />
+              <div className="absolute -inset-2 bg-gradient-to-r from-primary to-primary/50 rounded-3xl blur-xl opacity-40 -z-10" />
             </div>
           </div>
           
           {/* Title */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 animate-fade-in-up" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold text-white mb-6 leading-tight tracking-tight animate-fade-in-up" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
             مرحباً بكم في{" "}
             <span className="text-gradient-animated bg-gradient-to-r from-primary via-white to-primary bg-clip-text text-transparent bg-[length:200%_auto]">
               ÉLITE ZONE
@@ -53,12 +53,12 @@ const Hero = () => {
           </h1>
           
           {/* Subtitle */}
-          <p className="text-xl md:text-2xl text-white/90 mb-8 animate-fade-in-up" style={{ animationDelay: "0.4s", animationFillMode: "both" }}>
+          <p className="text-xl sm:text-2xl md:text-3xl text-white/95 font-semibold mb-6 animate-fade-in-up" style={{ animationDelay: "0.4s", animationFillMode: "both" }}>
             بوابتك نحو إتقان اللغات العالمية
           </p>
           
           {/* Description */}
-          <p className="text-lg text-white/80 max-w-2xl mx-auto mb-10 animate-fade-in-up leading-relaxed" style={{ animationDelay: "0.6s", animationFillMode: "both" }}>
+          <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-10 animate-fade-in-up leading-relaxed" style={{ animationDelay: "0.6s", animationFillMode: "both" }}>
             نقدم لكم أفضل دورات تعليم اللغة الإنجليزية والفرنسية في نواكشوط - موريتانيا
             <br />
             مع أساتذة متخصصين ومناهج حديثة تضمن لكم النجاح
@@ -86,30 +86,26 @@ const Hero = () => {
           </div>
           
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto mt-16 animate-fade-in-up" style={{ animationDelay: "1s", animationFillMode: "both" }}>
-            <div className="text-center group">
-              <CountUpNumber 
-                end={500} 
-                prefix="+" 
-                className="text-3xl md:text-4xl font-bold text-primary group-hover:scale-110 transition-transform duration-300"
-              />
-              <div className="text-white/80 text-sm md:text-base mt-1">طالب ناجح</div>
-            </div>
-            <div className="text-center group">
-              <CountUpNumber 
-                end={10} 
-                prefix="+" 
-                className="text-3xl md:text-4xl font-bold text-primary group-hover:scale-110 transition-transform duration-300"
-              />
-              <div className="text-white/80 text-sm md:text-base mt-1">سنوات خبرة</div>
-            </div>
-            <div className="text-center group">
-              <CountUpNumber 
-                end={2} 
-                className="text-3xl md:text-4xl font-bold text-primary group-hover:scale-110 transition-transform duration-300"
-              />
-              <div className="text-white/80 text-sm md:text-base mt-1">لغة عالمية</div>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto mt-14 md:mt-16 animate-fade-in-up" style={{ animationDelay: "1s", animationFillMode: "both" }}>
+            {[
+              { icon: Users, end: 500, suffix: "+", label: "طالب ناجح" },
+              { icon: BookOpen, end: 12, suffix: "+", label: "دورة تعليمية" },
+              { icon: GraduationCap, end: 98, suffix: "%", label: "نسبة النجاح" },
+              { icon: Award, end: 450, suffix: "+", label: "شهادة مُصدَرة" },
+            ].map((stat, i) => {
+              const Icon = stat.icon;
+              return (
+                <div key={i} className="group bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 md:p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40">
+                  <Icon className="w-6 h-6 md:w-7 md:h-7 text-primary mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                  <CountUpNumber 
+                    end={stat.end} 
+                    suffix={stat.suffix} 
+                    className="text-2xl md:text-4xl font-extrabold text-white"
+                  />
+                  <div className="text-white/70 text-xs md:text-sm mt-1 font-medium">{stat.label}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
