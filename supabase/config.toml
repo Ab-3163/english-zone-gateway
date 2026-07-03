@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.check-admin-session]
 verify_jwt = false
+
+[functions.notify-whatsapp-registration]
+verify_jwt = false
