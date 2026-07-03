@@ -189,7 +189,7 @@ const Courses = () => {
         ) : (
           <>
             {/* Courses Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-12 px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto mb-12 px-2 sm:px-4">
               {displayCourses.map((course, index) => (
                 <AnimatedSection
                   key={course.id}
@@ -197,26 +197,26 @@ const Courses = () => {
                   animation={index === 0 ? "slide-in-right" : "slide-in-left"}
                   className="h-full w-full"
                 >
-                  <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-xl card-hover group relative h-full flex flex-col">
+                  <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-xl card-hover group relative h-full flex flex-col hover:border-primary/40 transition-colors">
                     {/* Course Header */}
-                    <div className={`relative bg-gradient-to-l ${course.color} p-8 overflow-hidden`}>
+                    <div className={`relative bg-gradient-to-l ${course.color} p-8 md:p-10 overflow-hidden`}>
                       <div className="absolute inset-0 bg-black/10" />
                       <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
                       <div className="relative z-10 flex flex-col items-center text-center">
-                        <div className="mb-4 group-hover:scale-110 transition-transform duration-500">{course.icon}</div>
-                        <h3 className="text-2xl font-bold text-white mb-1">{course.title}</h3>
+                        <div className="mb-4 group-hover:scale-110 transition-transform duration-500 [&_svg]:w-28 [&_svg]:h-20 md:[&_svg]:w-32 md:[&_svg]:h-24 [&_svg]:drop-shadow-2xl">{course.icon}</div>
+                        <h3 className="text-2xl md:text-3xl font-bold text-white mb-1">{course.title}</h3>
                         {course.subtitle && <p className="text-white/80">{course.subtitle}</p>}
                       </div>
                     </div>
 
                     {/* Course Content */}
-                    <div className="p-8 flex-1 flex flex-col">
+                    <div className="p-6 md:p-8 flex-1 flex flex-col">
                       {/* Levels */}
-                      <div className="flex gap-2 mb-6 flex-wrap">
+                      <div className="grid grid-cols-3 gap-2 mb-6">
                         {course.levels.map((level, i) => (
                           <span
                             key={i}
-                            className="bg-secondary text-secondary-foreground px-4 py-1.5 rounded-full text-sm font-medium hover:bg-primary hover:text-primary-foreground transition-colors duration-300 cursor-default"
+                            className="bg-secondary text-secondary-foreground px-3 py-2 rounded-lg text-sm font-semibold text-center hover:bg-primary hover:text-primary-foreground transition-colors duration-300 cursor-default"
                           >
                             {level}
                           </span>
