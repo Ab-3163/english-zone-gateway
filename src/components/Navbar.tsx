@@ -102,11 +102,11 @@ const Navbar = () => {
   return (
     <nav className={`fixed top-0 right-0 left-0 z-50 transition-all duration-500 ${
       isScrolled 
-        ? "bg-background/95 backdrop-blur-lg border-b border-border shadow-lg" 
+        ? "bg-background/90 backdrop-blur-xl border-b border-border/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)]" 
         : "bg-transparent"
     }`}>
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
+        <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? "h-16" : "h-20"}`}>
           {/* Logo with hidden admin trigger */}
           <div className="flex items-center gap-3">
             <button 
@@ -124,8 +124,8 @@ const Navbar = () => {
                 <img 
                   src={logo} 
                   alt="ÉLITE ZONE" 
-                  className={`h-12 w-auto rounded-lg transition-all duration-300 group-hover:scale-105 ${
-                    isScrolled ? "" : "shadow-lg"
+                  className={`w-auto rounded-lg transition-all duration-300 group-hover:scale-105 ${
+                    isScrolled ? "h-11" : "h-14 shadow-lg"
                   }`} 
                 />
               <div className="absolute -inset-1 bg-primary/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
