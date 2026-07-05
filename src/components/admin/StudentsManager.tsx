@@ -352,6 +352,15 @@ const StudentsManager = () => {
                   <SelectContent><SelectItem value="in_person">حضورية</SelectItem><SelectItem value="online">أونلاين</SelectItem></SelectContent>
                 </Select>
               </div>
+              <div><label className="text-xs text-muted-foreground">مركز الدراسة</label>
+                <Select value={editing.study_center || ""} onValueChange={(v) => setEditing({ ...editing, study_center: v })}>
+                  <SelectTrigger><SelectValue placeholder="-" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="nouakchott">نواكشوط</SelectItem>
+                    <SelectItem value="tensoueilim">تنسويلم</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div><label className="text-xs text-muted-foreground">رسوم الدورة</label><Input type="number" value={editing.course_fee ?? ""} onChange={(e) => setEditing({ ...editing, course_fee: e.target.value })} dir="ltr" /></div>
               <div><label className="text-xs text-muted-foreground">المبلغ المدفوع</label><Input type="number" value={editing.paid_amount ?? ""} onChange={(e) => setEditing({ ...editing, paid_amount: e.target.value })} dir="ltr" /></div>
               <div><label className="text-xs text-muted-foreground">المتبقي</label><Input type="number" value={editing.remaining_amount ?? ""} onChange={(e) => setEditing({ ...editing, remaining_amount: e.target.value })} dir="ltr" /></div>
