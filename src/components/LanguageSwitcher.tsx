@@ -1,59 +1,61 @@
 import { useTranslation } from "react-i18next";
-import { Globe } from "lucide-react";
 
 interface Props {
   variant?: "light" | "dark";
   className?: string;
 }
 
+/**
+ * Segmented language control (AR / FR) with a sliding pill indicator.
+ * Compact, premium look — inspired by Apple / Stripe segmented controls.
+ */
 const LanguageSwitcher = ({ variant = "dark", className = "" }: Props) => {
   const { i18n } = useTranslation();
   const current = i18n.language?.startsWith("fr") ? "fr" : "ar";
 
   const setLang = (lang: "ar" | "fr") => {
-    i18n.changeLanguage(lang);
+    if (lang !== current) i18n.changeLanguage(lang);
   };
 
-  // Higher contrast, always visible labels
-  const wrapper =
-    "inline-flex items-center gap-1 px-1.5 py-1.5 rounded-full border-2 shadow-xl backdrop-blur-md transition-all duration-300 hover:shadow-2xl";
-  const wrapperTheme =
+  const track =
     variant === "light"
-      ? "bg-white/98 border-white"
-      : "bg-background/98 border-border";
+      ? "bg-white/15 border-white/25"
+      : "bg-foreground/5 border-border";
 
-  const base =
-    "px-3.5 py-2 rounded-full text-base sm:text-lg font-extrabold tracking-wider transition-all duration-300 border-2";
-
-  const active =
-    "bg-primary text-white border-primary shadow-md scale-105";
-  const inactive =
-    variant === "light"
-      ? "bg-white text-foreground border-foreground/20 hover:border-primary/60 hover:bg-primary/5"
-      : "bg-background text-foreground border-border hover:border-primary/60 hover:bg-primary/5";
+  const inactiveText =
+    variant === "light" ? "text-white/85 hover:text-white" : "text-foreground/70 hover:text-foreground";
 
   return (
     <div
-      className={`${wrapper} ${wrapperTheme} ${className}`}
       role="group"
-      aria-label="Change language / Changer de langue / تغيير اللغة"
+      aria-label="Change language"
+      className={`relative inline-flex items-center p-0.5 rounded-full border ${track} backdrop-blur-md ${className}`}
     >
-      <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-primary mx-1" />
+      {/* Sliding indicator */}
+      <span
+        aria-hidden
+        className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-full bg-primary shadow-sm transition-transform duration-300 ease-out ${
+          current === "ar" ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"
+        }`}
+        style={{ left: "2px" }}
+      />
       <button
         type="button"
         onClick={() => setLang("ar")}
-        className={`${base} ${current === "ar" ? active : inactive}`}
         aria-pressed={current === "ar"}
-        title="العربية"
+        className={`relative z-10 px-3 py-1 rounded-full text-xs font-bold tracking-wide transition-colors duration-300 ${
+          current === "ar" ? "text-white" : inactiveText
+        }`}
       >
         AR
       </button>
       <button
         type="button"
         onClick={() => setLang("fr")}
-        className={`${base} ${current === "fr" ? active : inactive}`}
         aria-pressed={current === "fr"}
-        title="Français"
+        className={`relative z-10 px-3 py-1 rounded-full text-xs font-bold tracking-wide transition-colors duration-300 ${
+          current === "fr" ? "text-white" : inactiveText
+        }`}
       >
         FR
       </button>
