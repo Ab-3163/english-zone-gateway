@@ -28,6 +28,7 @@ const resources = {
         cta: "سجّل الآن",
         secondaryCta: "تعرف علينا",
         scroll: "اكتشف المزيد",
+        exploreCourses: "استكشف الدورات",
         stats: {
           students: "طالب ناجح",
           courses: "دورة تعليمية",
@@ -137,6 +138,7 @@ const resources = {
         cta: "S'inscrire maintenant",
         secondaryCta: "En savoir plus",
         scroll: "Découvrir plus",
+        exploreCourses: "Découvrir les cours",
         stats: {
           students: "étudiants diplômés",
           courses: "cours proposés",
