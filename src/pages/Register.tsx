@@ -122,7 +122,7 @@ const Register = () => {
       return;
     }
 
-    const { error } = await supabase.from("registrations").insert({
+    const { data: inserted, error } = await supabase.from("registrations").insert({
       full_name: parsed.data.full_name,
       phone: parsed.data.phone,
       age: parsed.data.age ?? null,
@@ -135,7 +135,7 @@ const Register = () => {
       receipt_url: path,
       payment_method: "bankily",
       status: "payment_review",
-    } as any);
+    } as any).select("id, created_at").single();
     setSubmitting(false);
     if (error) {
       toast({ title: t("register.toastError"), description: t("register.errSend"), variant: "destructive" });
@@ -154,7 +154,9 @@ const Register = () => {
           level: parsed.data.level,
           center: parsed.data.study_center,
           course_type: parsed.data.course_type,
-          created_at: new Date().toISOString(),
+          notes: parsed.data.notes || "",
+          student_id: inserted?.id || "",
+          created_at: inserted?.created_at || new Date().toISOString(),
         },
       })
       .then((res) => {
