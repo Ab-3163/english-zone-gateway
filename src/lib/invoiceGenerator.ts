@@ -14,6 +14,7 @@ export interface InvoiceStudent {
   level: string | null;
   group_name: string | null;
   course_type: string | null;
+  study_center?: string | null;
   paid_amount: number | null;
   course_fee: number | null;
   payment_method: string | null;
@@ -30,6 +31,7 @@ const LANG_LABEL: Record<string, string> = {
 function buildHtml(s: InvoiceStudent, logoSrc: string, qrSrc: string): string {
   const date = new Date(s.payment_confirmed_at || Date.now()).toLocaleDateString("ar-EG");
   const lang = LANG_LABEL[s.language || ""] || s.language || "—";
+  const centerLbl = s.study_center === "nouakchott" ? "نواكشوط" : s.study_center === "tensoueilim" ? "تنسويلم" : "—";
   const paid = s.paid_amount ?? 0;
   const fee = s.course_fee ?? paid;
   const remaining = Math.max(0, fee - paid);
@@ -76,7 +78,8 @@ function buildHtml(s: InvoiceStudent, logoSrc: string, qrSrc: string): string {
         <tr style="${rowStyle}"><td style="${labelStyle}">اللغة / الدورة</td><td style="${valueStyle}">${lang}</td></tr>
         <tr style="${rowStyle}"><td style="${labelStyle}">المستوى</td><td style="${valueStyle}">${s.level || "—"}</td></tr>
         <tr style="${rowStyle}"><td style="${labelStyle}">القسم</td><td style="${valueStyle}">${s.group_name || "—"}</td></tr>
-        <tr><td style="${labelStyle}">نوع الدراسة</td><td style="${valueStyle}">${s.course_type === "online" ? "أونلاين" : "حضوري"}</td></tr>
+        <tr style="${rowStyle}"><td style="${labelStyle}">نوع الدراسة</td><td style="${valueStyle}">${s.course_type === "online" ? "أونلاين" : "حضوري"}</td></tr>
+        <tr><td style="${labelStyle}">مركز الدراسة</td><td style="${valueStyle}">${centerLbl}</td></tr>
       </table>
     </div>
 

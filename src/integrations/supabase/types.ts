@@ -312,6 +312,7 @@ export type Database = {
           preferred_time: string | null
           receipt_url: string | null
           status: string
+          study_center: string | null
           updated_at: string
         }
         Insert: {
@@ -328,6 +329,7 @@ export type Database = {
           preferred_time?: string | null
           receipt_url?: string | null
           status?: string
+          study_center?: string | null
           updated_at?: string
         }
         Update: {
@@ -344,6 +346,7 @@ export type Database = {
           preferred_time?: string | null
           receipt_url?: string | null
           status?: string
+          study_center?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -461,6 +464,7 @@ export type Database = {
           room: string | null
           status: string
           student_id: string
+          study_center: string | null
           study_days: string | null
           study_time: string | null
           teacher: string | null
@@ -507,6 +511,7 @@ export type Database = {
           room?: string | null
           status?: string
           student_id?: string
+          study_center?: string | null
           study_days?: string | null
           study_time?: string | null
           teacher?: string | null
@@ -553,6 +558,7 @@ export type Database = {
           room?: string | null
           status?: string
           student_id?: string
+          study_center?: string | null
           study_days?: string | null
           study_time?: string | null
           teacher?: string | null
@@ -633,6 +639,7 @@ export type Database = {
           room: string | null
           status: string
           student_id: string
+          study_center: string | null
           study_days: string | null
           study_time: string | null
           teacher: string | null
@@ -692,6 +699,7 @@ export type Database = {
           room: string | null
           status: string
           student_id: string
+          study_center: string | null
           study_days: string | null
           study_time: string | null
           teacher: string | null
