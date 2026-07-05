@@ -33,7 +33,6 @@ function buildHtml(s: InvoiceStudent, logoSrc: string, qrSrc: string): string {
   const paid = s.paid_amount ?? 0;
   const fee = s.course_fee ?? paid;
   const remaining = Math.max(0, fee - paid);
-  return `
   const rowStyle = "border-bottom:1px solid #EEF2F7;";
   const labelStyle = "padding:9px 12px; color:#6B7280; font-size:13px; width:38%; background:#FAFBFC;";
   const valueStyle = "padding:9px 12px; color:#0F172A; font-size:14px; font-weight:600;";
