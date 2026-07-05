@@ -37,6 +37,7 @@ interface Payload {
   course?: string;
   score?: number | string;
   grade?: string;
+  created_at?: string;
 }
 
 const labelLang = (v?: string | null) =>
@@ -63,7 +64,8 @@ function buildBody(p: Payload): { to: string; body: Record<string, unknown> } {
         `اللغة: ${labelLang(p.language)}\n` +
         `المستوى: ${p.level || "-"}\n` +
         `المركز: ${labelCenter(p.center)}\n` +
-        `نوع الدورة: ${labelCourseType(p.course_type)}`;
+        `نوع الدورة: ${labelCourseType(p.course_type)}\n` +
+        `تاريخ التسجيل: ${new Date(p.created_at || Date.now()).toLocaleString("ar")}`;
       break;
     case "acceptance":
       text =
