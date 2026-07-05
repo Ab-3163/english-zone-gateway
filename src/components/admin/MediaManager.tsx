@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Upload, Trash2, Loader2, Image, Video, Copy, Check, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import ConfirmDialog from "./ConfirmDialog";
 
 interface MediaFile {
   id: string;
@@ -16,6 +18,8 @@ interface MediaFile {
 }
 
 const MediaManager = () => {
+  const { t } = useTranslation();
+  const [confirmItem, setConfirmItem] = useState<MediaFile | null>(null);
   const [media, setMedia] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -34,11 +38,7 @@ const MediaManager = () => {
 
     if (error) {
       console.error("Error fetching media:", error);
-      toast({
-        title: "خطأ",
-        description: "فشل في جلب الملفات: " + error.message,
-        variant: "destructive",
-      });
+      toast({ title: t("admin.common.error"), description: `${t("admin.media.fetchFail")}: ${error.message}`, variant: "destructive" });
     } else {
       setMedia(data || []);
     }
@@ -67,11 +67,7 @@ const MediaManager = () => {
 
       if (uploadError) {
         console.error("Upload error:", uploadError);
-        toast({
-          title: "خطأ",
-          description: `فشل في رفع ${file.name}: ${uploadError.message}`,
-          variant: "destructive",
-        });
+        toast({ title: t("admin.common.error"), description: `${t("admin.media.uploadFail", { name: file.name })}: ${uploadError.message}`, variant: "destructive" });
         continue;
       }
 
@@ -94,18 +90,11 @@ const MediaManager = () => {
 
       if (insertError) {
         console.error("Insert error:", insertError);
-        toast({
-          title: "خطأ",
-          description: `فشل في حفظ ${file.name}: ${insertError.message}`,
-          variant: "destructive",
-        });
+        toast({ title: t("admin.common.error"), description: `${t("admin.media.saveFail", { name: file.name })}: ${insertError.message}`, variant: "destructive" });
       }
     }
 
-    toast({
-      title: "تم",
-      description: "تم رفع الملفات بنجاح",
-    });
+    toast({ title: t("admin.common.done"), description: t("admin.media.uploadedOk") });
 
     setUploading(false);
     fetchMedia();
@@ -115,8 +104,6 @@ const MediaManager = () => {
   };
 
   const handleDelete = async (item: MediaFile) => {
-    if (!confirm("هل أنت متأكد من حذف هذا الملف؟")) return;
-
     // Extract path from URL
     const urlParts = item.file_url.split("/uploads/");
     if (urlParts.length > 1) {
@@ -127,9 +114,9 @@ const MediaManager = () => {
     const { error } = await supabase.from("media").delete().eq("id", item.id);
 
     if (error) {
-      toast({ title: "خطأ", description: "فشل في حذف الملف", variant: "destructive" });
+      toast({ title: t("admin.common.error"), description: t("admin.media.deleteFail"), variant: "destructive" });
     } else {
-      toast({ title: "تم", description: "تم حذف الملف بنجاح" });
+      toast({ title: t("admin.common.done"), description: t("admin.media.deletedOk") });
       fetchMedia();
     }
   };
@@ -141,12 +128,9 @@ const MediaManager = () => {
       .eq("id", item.id);
 
     if (error) {
-      toast({ title: "خطأ", description: "فشل في تحديث حالة النشر", variant: "destructive" });
+      toast({ title: t("admin.common.error"), description: t("admin.media.togglePublishFail"), variant: "destructive" });
     } else {
-      toast({ 
-        title: "تم", 
-        description: item.published ? "تم إلغاء النشر" : "تم النشر - الملف ظاهر الآن في الموقع" 
-      });
+      toast({ title: t("admin.common.done"), description: item.published ? t("admin.media.unpublishedNow") : t("admin.media.publishedNow") });
       fetchMedia();
     }
   };
@@ -155,11 +139,11 @@ const MediaManager = () => {
     navigator.clipboard.writeText(url);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
-    toast({ title: "تم", description: "تم نسخ الرابط" });
+    toast({ title: t("admin.common.done"), description: t("admin.media.copied") });
   };
 
   const formatFileSize = (bytes: number | null) => {
-    if (!bytes) return "غير معروف";
+    if (!bytes) return t("admin.media.unknownSize");
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -204,10 +188,10 @@ const MediaManager = () => {
               <Upload className="w-12 h-12 text-muted-foreground mb-4" />
             )}
             <span className="text-lg font-medium mb-2">
-              {uploading ? "جاري الرفع..." : "اضغط لرفع ملفات"}
+              {uploading ? t("admin.media.uploading") : t("admin.media.clickToUpload")}
             </span>
             <span className="text-sm text-muted-foreground">
-              صور أو فيديوهات
+              {t("admin.media.typesHint")}
             </span>
           </label>
         </div>
@@ -220,21 +204,21 @@ const MediaManager = () => {
           size="sm"
           onClick={() => setFilter("all")}
         >
-          الكل ({media.length})
+          {t("admin.media.all")} ({media.length})
         </Button>
         <Button
           variant={filter === "published" ? "default" : "ghost"}
           size="sm"
           onClick={() => setFilter("published")}
         >
-          منشور ({media.filter(m => m.published).length})
+          {t("admin.media.published")} ({media.filter(m => m.published).length})
         </Button>
         <Button
           variant={filter === "unpublished" ? "default" : "ghost"}
           size="sm"
           onClick={() => setFilter("unpublished")}
         >
-          غير منشور ({media.filter(m => !m.published).length})
+          {t("admin.media.unpublished")} ({media.filter(m => !m.published).length})
         </Button>
       </div>
 
@@ -242,7 +226,7 @@ const MediaManager = () => {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {filteredMedia.length === 0 ? (
           <div className="col-span-full text-center py-12 text-muted-foreground">
-            لا توجد ملفات
+            {t("admin.media.empty")}
           </div>
         ) : (
           filteredMedia.map((item) => (
@@ -258,7 +242,7 @@ const MediaManager = () => {
                   ? "bg-green-500 text-white" 
                   : "bg-muted text-muted-foreground"
               }`}>
-                {item.published ? "منشور" : "مخفي"}
+                {item.published ? t("admin.media.published") : t("admin.media.hidden")}
               </div>
 
               {/* Preview */}
@@ -282,7 +266,7 @@ const MediaManager = () => {
                     variant={item.published ? "destructive" : "default"}
                     size="icon"
                     onClick={() => togglePublished(item)}
-                    title={item.published ? "إلغاء النشر" : "نشر"}
+                    title={item.published ? t("admin.ann.unpublish") : t("admin.ann.publishAction")}
                   >
                     {item.published ? (
                       <EyeOff className="w-4 h-4" />
@@ -304,7 +288,7 @@ const MediaManager = () => {
                   <Button
                     variant="destructive"
                     size="icon"
-                    onClick={() => handleDelete(item)}
+                    onClick={() => setConfirmItem(item)}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -331,6 +315,12 @@ const MediaManager = () => {
           ))
         )}
       </div>
+      <ConfirmDialog
+        open={!!confirmItem}
+        onOpenChange={(o) => { if (!o) setConfirmItem(null); }}
+        description={t("admin.media.confirmDelete")}
+        onConfirm={() => { if (confirmItem) { handleDelete(confirmItem); setConfirmItem(null); } }}
+      />
     </div>
   );
 };
