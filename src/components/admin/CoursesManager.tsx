@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus, Pencil, Trash2, Eye, EyeOff, Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import ConfirmDialog from "./ConfirmDialog";
 
 interface Course {
   id: string;
@@ -20,15 +22,18 @@ interface Course {
   updated_at: string;
 }
 
-const languageOptions = [
-  { value: "english", label: "الإنجليزية", flag: "🇺🇸" },
-  { value: "french", label: "الفرنسية", flag: "🇫🇷" },
-  { value: "arabic", label: "العربية", flag: "🇸🇦" },
-  { value: "spanish", label: "الإسبانية", flag: "🇪🇸" },
-  { value: "german", label: "الألمانية", flag: "🇩🇪" },
+const languageValues = [
+  { value: "english", flag: "🇺🇸" },
+  { value: "french", flag: "🇫🇷" },
+  { value: "arabic", flag: "🇸🇦" },
+  { value: "spanish", flag: "🇪🇸" },
+  { value: "german", flag: "🇩🇪" },
 ];
 
 const CoursesManager = () => {
+  const { t } = useTranslation();
+  const languageOptions = languageValues.map((l) => ({ ...l, label: t(`admin.courses.langs.${l.value}`) }));
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -52,11 +57,7 @@ const CoursesManager = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast({
-        title: "خطأ",
-        description: "فشل في جلب الدورات",
-        variant: "destructive",
-      });
+      toast({ title: t("admin.common.error"), description: t("admin.courses.fetchFail"), variant: "destructive" });
     } else {
       setCourses(data || []);
     }
@@ -89,11 +90,7 @@ const CoursesManager = () => {
 
   const handleSave = async () => {
     if (!formData.title || !formData.description || !formData.price) {
-      toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
-        variant: "destructive",
-      });
+      toast({ title: t("admin.common.error"), description: t("admin.courses.reqFields"), variant: "destructive" });
       return;
     }
 
@@ -118,9 +115,9 @@ const CoursesManager = () => {
         .eq("id", editingId);
 
       if (error) {
-        toast({ title: "خطأ", description: "فشل في تحديث الدورة", variant: "destructive" });
+        toast({ title: t("admin.common.error"), description: error.message, variant: "destructive" });
       } else {
-        toast({ title: "تم", description: "تم تحديث الدورة بنجاح" });
+        toast({ title: t("admin.common.done"), description: t("admin.courses.updatedOk") });
         resetForm();
         fetchCourses();
       }
@@ -138,9 +135,9 @@ const CoursesManager = () => {
         } as any);
 
       if (error) {
-        toast({ title: "خطأ", description: "فشل في إنشاء الدورة", variant: "destructive" });
+        toast({ title: t("admin.common.error"), description: error.message, variant: "destructive" });
       } else {
-        toast({ title: "تم", description: "تم إنشاء الدورة بنجاح" });
+        toast({ title: t("admin.common.done"), description: t("admin.courses.createdOk") });
         resetForm();
         fetchCourses();
       }
@@ -150,14 +147,11 @@ const CoursesManager = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذه الدورة؟")) return;
-
     const { error } = await supabase.from("courses").delete().eq("id", id);
-
     if (error) {
-      toast({ title: "خطأ", description: "فشل في حذف الدورة", variant: "destructive" });
+      toast({ title: t("admin.common.error"), description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "تم", description: "تم حذف الدورة بنجاح" });
+      toast({ title: t("admin.common.done"), description: t("admin.courses.deletedOk") });
       fetchCourses();
     }
   };
@@ -169,7 +163,7 @@ const CoursesManager = () => {
       .eq("id", id);
 
     if (error) {
-      toast({ title: "خطأ", description: "فشل في تحديث حالة النشر", variant: "destructive" });
+      toast({ title: t("admin.common.error"), description: error.message, variant: "destructive" });
     } else {
       fetchCourses();
     }
@@ -187,10 +181,10 @@ const CoursesManager = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <p className="text-muted-foreground">إدارة دورات المركز</p>
+        <p className="text-muted-foreground">{t("admin.courses.subtitle")}</p>
         <Button onClick={() => setShowForm(true)} disabled={showForm}>
-          <Plus className="w-5 h-5 ml-2" />
-          إضافة دورة
+          <Plus className="w-5 h-5 mx-2" />
+          {t("admin.courses.add")}
         </Button>
       </div>
 
@@ -199,7 +193,7 @@ const CoursesManager = () => {
         <div className="bg-card rounded-xl border border-border p-6 space-y-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">
-              {editingId ? "تعديل الدورة" : "دورة جديدة"}
+              {editingId ? t("admin.courses.editTitle") : t("admin.courses.newTitle")}
             </h3>
             <Button variant="ghost" size="icon" onClick={resetForm}>
               <X className="w-5 h-5" />
@@ -208,48 +202,48 @@ const CoursesManager = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">اسم الدورة *</label>
+              <label className="text-sm font-medium mb-2 block">{t("admin.courses.name")} *</label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="اسم الدورة"
+                placeholder={t("admin.courses.name")}
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">السعر (أوقية) *</label>
+              <label className="text-sm font-medium mb-2 block">{t("admin.courses.price")} *</label>
               <Input
                 type="number"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                placeholder="السعر"
+                placeholder={t("admin.courses.price")}
                 dir="ltr"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block">الوصف *</label>
+            <label className="text-sm font-medium mb-2 block">{t("admin.courses.description")} *</label>
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="وصف الدورة"
+              placeholder={t("admin.courses.description")}
               rows={3}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block">المميزات (كل سطر ميزة)</label>
+            <label className="text-sm font-medium mb-2 block">{t("admin.courses.features")}</label>
             <Textarea
               value={formData.features}
               onChange={(e) => setFormData({ ...formData, features: e.target.value })}
-              placeholder="ميزة 1&#10;ميزة 2&#10;ميزة 3"
+              placeholder={t("admin.courses.featuresPh")}
               rows={4}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block">لغة الدورة *</label>
+            <label className="text-sm font-medium mb-2 block">{t("admin.courses.language")} *</label>
             <div className="flex flex-wrap gap-2">
               {languageOptions.map((lang) => (
                 <button
@@ -270,7 +264,7 @@ const CoursesManager = () => {
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block">رابط الصورة (اختياري)</label>
+            <label className="text-sm font-medium mb-2 block">{t("admin.courses.image")}</label>
             <Input
               value={formData.image_url}
               onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
@@ -284,16 +278,16 @@ const CoursesManager = () => {
               checked={formData.published}
               onCheckedChange={(checked) => setFormData({ ...formData, published: checked })}
             />
-            <label className="text-sm font-medium">نشر الدورة</label>
+            <label className="text-sm font-medium">{t("admin.courses.publish")}</label>
           </div>
 
           <div className="flex gap-3 pt-4">
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5 ml-2" />}
-              حفظ
+              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5 mx-2" />}
+              {t("admin.courses.save")}
             </Button>
             <Button variant="outline" onClick={resetForm}>
-              إلغاء
+              {t("admin.courses.cancel")}
             </Button>
           </div>
         </div>
@@ -303,7 +297,7 @@ const CoursesManager = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {courses.length === 0 ? (
           <div className="col-span-full text-center py-12 text-muted-foreground">
-            لا توجد دورات بعد
+            {t("admin.courses.empty")}
           </div>
         ) : (
           courses.map((course) => (
@@ -320,15 +314,15 @@ const CoursesManager = () => {
                     <h3 className="font-semibold text-lg">{course.title}</h3>
                     {course.published ? (
                       <span className="text-xs bg-green-500/20 text-green-500 px-2 py-1 rounded-full">
-                        منشور
+                        {t("admin.courses.published")}
                       </span>
                     ) : (
                       <span className="text-xs bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded-full">
-                        مسودة
+                        {t("admin.courses.draft")}
                       </span>
                     )}
                   </div>
-                  <p className="text-2xl font-bold text-primary">{course.price} أوقية</p>
+                  <p className="text-2xl font-bold text-primary">{course.price} {t("admin.courses.currency")}</p>
                 </div>
 
                 <div className="flex items-center gap-1">
@@ -345,7 +339,7 @@ const CoursesManager = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => handleDelete(course.id)}
+                    onClick={() => setConfirmId(course.id)}
                     className="text-destructive hover:text-destructive"
                   >
                     <Trash2 className="w-5 h-5" />
@@ -364,7 +358,7 @@ const CoursesManager = () => {
                   ))}
                   {course.features.length > 3 && (
                     <span className="text-xs text-muted-foreground">
-                      +{course.features.length - 3} أخرى
+                      +{course.features.length - 3} {t("admin.courses.more")}
                     </span>
                   )}
                 </div>
@@ -373,6 +367,12 @@ const CoursesManager = () => {
           ))
         )}
       </div>
+      <ConfirmDialog
+        open={!!confirmId}
+        onOpenChange={(o) => { if (!o) setConfirmId(null); }}
+        description={t("admin.courses.confirmDelete")}
+        onConfirm={() => { if (confirmId) { handleDelete(confirmId); setConfirmId(null); } }}
+      />
     </div>
   );
 };

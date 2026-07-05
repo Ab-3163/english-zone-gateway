@@ -1,10 +1,12 @@
 import { useEffect, useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, Search, Trash2, Award, Calendar, GraduationCap } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import ConfirmDialog from "./ConfirmDialog";
 
 interface Cert {
   id: string;
@@ -20,6 +22,8 @@ interface Cert {
 }
 
 const CertificatesManager = () => {
+  const { t, i18n } = useTranslation();
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const [list, setList] = useState<Cert[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -30,7 +34,7 @@ const CertificatesManager = () => {
       .from("certificates" as any)
       .select("*")
       .order("created_at", { ascending: false });
-    if (error) toast({ title: "خطأ", description: error.message, variant: "destructive" });
+    if (error) toast({ title: t("admin.common.error"), description: error.message, variant: "destructive" });
     else setList((data as any) || []);
     setLoading(false);
   };
@@ -45,10 +49,9 @@ const CertificatesManager = () => {
   }, [list, search]);
 
   const remove = async (id: string) => {
-    if (!confirm("حذف الشهادة نهائياً؟")) return;
     const { error } = await supabase.from("certificates" as any).delete().eq("id", id);
-    if (error) return toast({ title: "خطأ", description: error.message, variant: "destructive" });
-    toast({ title: "تم الحذف" });
+    if (error) return toast({ title: t("admin.common.error"), description: error.message, variant: "destructive" });
+    toast({ title: t("admin.certs.deleted") });
     load();
   };
 
@@ -59,7 +62,7 @@ const CertificatesManager = () => {
       <div className="relative">
         <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
-          placeholder="بحث برقم الشهادة، الاسم، رقم الطالب..."
+          placeholder={t("admin.certs.searchPh")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pr-9 h-11"
@@ -68,7 +71,7 @@ const CertificatesManager = () => {
 
       {filtered.length === 0 ? (
         <div className="bg-card border rounded-2xl p-12 text-center text-muted-foreground">
-          لا توجد شهادات بعد. ستنشأ تلقائياً عند نجاح أي طالب.
+          {t("admin.certs.empty")}
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -82,7 +85,7 @@ const CertificatesManager = () => {
                   <Badge className="bg-primary/10 text-primary border-primary/20 font-mono text-xs" variant="outline">
                     {c.certificate_number}
                   </Badge>
-                  <button onClick={() => remove(c.id)} className="text-destructive/70 hover:text-destructive transition">
+                  <button onClick={() => setConfirmId(c.id)} className="text-destructive/70 hover:text-destructive transition">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -95,14 +98,14 @@ const CertificatesManager = () => {
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Calendar className="w-4 h-4 shrink-0" />
-                    <span>{new Date(c.pass_date).toLocaleDateString("ar")}</span>
+                    <span>{new Date(c.pass_date).toLocaleDateString(i18n.language === "fr" ? "fr" : "ar")}</span>
                   </div>
                 </div>
                 {(c.score !== null || c.grade) && (
                   <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
                     {c.score !== null && (
                       <div>
-                        <span className="text-xs text-muted-foreground">الدرجة: </span>
+                        <span className="text-xs text-muted-foreground">{t("admin.certs.score")}: </span>
                         <span className="font-bold text-primary">{c.score}/100</span>
                       </div>
                     )}
@@ -114,6 +117,12 @@ const CertificatesManager = () => {
           ))}
         </div>
       )}
+      <ConfirmDialog
+        open={!!confirmId}
+        onOpenChange={(o) => { if (!o) setConfirmId(null); }}
+        description={t("admin.certs.confirmDelete")}
+        onConfirm={() => { if (confirmId) { remove(confirmId); setConfirmId(null); } }}
+      />
     </div>
   );
 };

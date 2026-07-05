@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus, Pencil, Trash2, Eye, EyeOff, Upload, Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import ConfirmDialog from "./ConfirmDialog";
 
 interface Result {
   id: string;
@@ -27,6 +29,8 @@ const empty = {
 };
 
 const ResultsManager = () => {
+  const { t } = useTranslation();
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const [rows, setRows] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -39,7 +43,7 @@ const ResultsManager = () => {
   const fetch = async () => {
     setLoading(true);
     const { data, error } = await supabase.from("student_results").select("*").order("created_at", { ascending: false });
-    if (error) toast({ title: "خطأ", description: "فشل في جلب النتائج", variant: "destructive" });
+    if (error) toast({ title: t("admin.common.error"), description: t("admin.results.fetchFail"), variant: "destructive" });
     else setRows(data || []);
     setLoading(false);
   };
@@ -59,7 +63,7 @@ const ResultsManager = () => {
 
   const save = async () => {
     if (!form.student_id.trim() || !form.full_name.trim() || !form.course.trim()) {
-      toast({ title: "خطأ", description: "رقم التسجيل والاسم والدورة مطلوبة", variant: "destructive" });
+      toast({ title: t("admin.common.error"), description: t("admin.results.reqFields"), variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -79,16 +83,15 @@ const ResultsManager = () => {
       ? await supabase.from("student_results").update(payload).eq("id", editingId)
       : await supabase.from("student_results").insert(payload);
     setSaving(false);
-    if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "تم", description: "تم الحفظ" });
+    if (error) { toast({ title: t("admin.common.error"), description: error.message, variant: "destructive" }); return; }
+    toast({ title: t("admin.common.done"), description: t("admin.results.saved") });
     reset(); fetch();
   };
 
   const remove = async (id: string) => {
-    if (!confirm("حذف هذه النتيجة؟")) return;
     const { error } = await supabase.from("student_results").delete().eq("id", id);
-    if (error) toast({ title: "خطأ", description: error.message, variant: "destructive" });
-    else { toast({ title: "تم", description: "تم الحذف" }); fetch(); }
+    if (error) toast({ title: t("admin.common.error"), description: error.message, variant: "destructive" });
+    else { toast({ title: t("admin.common.done"), description: t("admin.results.deleted") }); fetch(); }
   };
 
   const togglePublished = async (r: Result) => {
@@ -101,10 +104,10 @@ const ResultsManager = () => {
     if (!file) return;
     const text = await file.text();
     const lines = text.split(/\r?\n/).filter(l => l.trim());
-    if (lines.length < 2) { toast({ title: "خطأ", description: "الملف فارغ", variant: "destructive" }); return; }
+    if (lines.length < 2) { toast({ title: t("admin.common.error"), description: t("admin.results.csvEmpty"), variant: "destructive" }); return; }
     const header = lines[0].split(",").map(h => h.trim().toLowerCase());
     const required = ["student_id", "full_name", "course"];
-    for (const r of required) if (!header.includes(r)) { toast({ title: "خطأ", description: `العمود ${r} مفقود`, variant: "destructive" }); return; }
+    for (const r of required) if (!header.includes(r)) { toast({ title: t("admin.common.error"), description: t("admin.results.csvMissing", { col: r }), variant: "destructive" }); return; }
     const rows = lines.slice(1).map(line => {
       const cells = line.split(",").map(c => c.trim());
       const obj: any = {};
@@ -123,8 +126,8 @@ const ResultsManager = () => {
       };
     }).filter(r => r.student_id && r.full_name && r.course);
     const { error } = await supabase.from("student_results").insert(rows);
-    if (error) toast({ title: "خطأ في الاستيراد", description: error.message, variant: "destructive" });
-    else { toast({ title: "تم", description: `تم استيراد ${rows.length} نتيجة` }); fetch(); }
+    if (error) toast({ title: t("admin.results.csvImportFail"), description: error.message, variant: "destructive" });
+    else { toast({ title: t("admin.common.done"), description: t("admin.results.csvImported", { n: rows.length }) }); fetch(); }
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -138,50 +141,50 @@ const ResultsManager = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3 justify-between">
         <div className="flex gap-2 flex-1 min-w-[220px]">
-          <Input placeholder="بحث..." value={search} onChange={e => setSearch(e.target.value)} />
+          <Input placeholder={t("admin.results.searchPh")} value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <div className="flex gap-2">
           <input ref={fileRef} type="file" accept=".csv,.txt" onChange={handleFile} className="hidden" />
           <Button variant="outline" onClick={() => fileRef.current?.click()} className="gap-2">
-            <Upload className="w-4 h-4" /> استيراد CSV
+            <Upload className="w-4 h-4" /> {t("admin.results.importCsv")}
           </Button>
-          <Button onClick={() => { reset(); setShowForm(true); }} className="gap-2"><Plus className="w-4 h-4" /> إضافة</Button>
+          <Button onClick={() => { reset(); setShowForm(true); }} className="gap-2"><Plus className="w-4 h-4" /> {t("admin.results.add")}</Button>
         </div>
       </div>
 
       <div className="text-xs text-muted-foreground bg-muted/40 rounded-lg p-3">
-        أعمدة CSV: student_id, phone, full_name, course, level, score, grade, status, admin_note, published
+        {t("admin.results.csvCols")}
       </div>
 
       {showForm && (
         <div className="bg-card border border-border rounded-xl p-6 space-y-4">
           <div className="grid md:grid-cols-2 gap-3">
-            <Input placeholder="رقم التسجيل *" value={form.student_id} onChange={e => setForm({ ...form, student_id: e.target.value })} />
-            <Input placeholder="رقم الهاتف" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} dir="ltr" />
-            <Input placeholder="الاسم الكامل *" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
-            <Input placeholder="الدورة *" value={form.course} onChange={e => setForm({ ...form, course: e.target.value })} />
-            <Input placeholder="المستوى" value={form.level} onChange={e => setForm({ ...form, level: e.target.value })} />
-            <Input type="number" placeholder="النتيجة" value={form.score} onChange={e => setForm({ ...form, score: e.target.value })} dir="ltr" />
-            <Input placeholder="التقدير" value={form.grade} onChange={e => setForm({ ...form, grade: e.target.value })} />
+            <Input placeholder={`${t("admin.results.studentId")} *`} value={form.student_id} onChange={e => setForm({ ...form, student_id: e.target.value })} />
+            <Input placeholder={t("admin.results.phone")} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} dir="ltr" />
+            <Input placeholder={`${t("admin.results.fullName")} *`} value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} />
+            <Input placeholder={`${t("admin.results.course")} *`} value={form.course} onChange={e => setForm({ ...form, course: e.target.value })} />
+            <Input placeholder={t("admin.results.level")} value={form.level} onChange={e => setForm({ ...form, level: e.target.value })} />
+            <Input type="number" placeholder={t("admin.results.score")} value={form.score} onChange={e => setForm({ ...form, score: e.target.value })} dir="ltr" />
+            <Input placeholder={t("admin.results.grade")} value={form.grade} onChange={e => setForm({ ...form, grade: e.target.value })} />
             <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="pass">ناجح</SelectItem>
-                <SelectItem value="fail">راسب</SelectItem>
-                <SelectItem value="pending">قيد المراجعة</SelectItem>
+                <SelectItem value="pass">{t("admin.results.pass")}</SelectItem>
+                <SelectItem value="fail">{t("admin.results.fail")}</SelectItem>
+                <SelectItem value="pending">{t("admin.results.pending")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <Textarea placeholder="ملاحظة الإدارة" value={form.admin_note} onChange={e => setForm({ ...form, admin_note: e.target.value })} />
+          <Textarea placeholder={t("admin.results.note")} value={form.admin_note} onChange={e => setForm({ ...form, admin_note: e.target.value })} />
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={form.published} onChange={e => setForm({ ...form, published: e.target.checked })} />
-              منشور
+              {t("admin.results.published")}
             </label>
           </div>
           <div className="flex gap-2">
-            <Button onClick={save} disabled={saving} className="gap-2">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} حفظ</Button>
-            <Button variant="outline" onClick={reset} className="gap-2"><X className="w-4 h-4" /> إلغاء</Button>
+            <Button onClick={save} disabled={saving} className="gap-2">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {t("admin.results.save")}</Button>
+            <Button variant="outline" onClick={reset} className="gap-2"><X className="w-4 h-4" /> {t("admin.results.cancel")}</Button>
           </div>
         </div>
       )}
@@ -191,13 +194,13 @@ const ResultsManager = () => {
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr>
-                <th className="text-right p-3">رقم التسجيل</th>
-                <th className="text-right p-3">الاسم</th>
-                <th className="text-right p-3">الدورة</th>
-                <th className="text-right p-3">النتيجة</th>
-                <th className="text-right p-3">الحالة</th>
-                <th className="text-right p-3">نشر</th>
-                <th className="text-right p-3">إجراءات</th>
+                <th className="text-start p-3">{t("admin.results.studentId")}</th>
+                <th className="text-start p-3">{t("admin.results.fullName")}</th>
+                <th className="text-start p-3">{t("admin.results.course")}</th>
+                <th className="text-start p-3">{t("admin.results.score")}</th>
+                <th className="text-start p-3">{t("admin.results.status")}</th>
+                <th className="text-start p-3">{t("admin.results.publish")}</th>
+                <th className="text-start p-3">{t("admin.results.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -207,7 +210,7 @@ const ResultsManager = () => {
                   <td className="p-3">{r.full_name}</td>
                   <td className="p-3">{r.course}</td>
                   <td className="p-3">{r.score ?? "—"} {r.grade ? `(${r.grade})` : ""}</td>
-                  <td className="p-3">{r.status}</td>
+                  <td className="p-3">{r.status === "pass" ? t("admin.results.pass") : r.status === "fail" ? t("admin.results.fail") : t("admin.results.pending")}</td>
                   <td className="p-3">
                     <button onClick={() => togglePublished(r)} className="text-primary">
                       {r.published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
@@ -216,18 +219,24 @@ const ResultsManager = () => {
                   <td className="p-3">
                     <div className="flex gap-2">
                       <button onClick={() => startEdit(r)} className="text-primary"><Pencil className="w-4 h-4" /></button>
-                      <button onClick={() => remove(r.id)} className="text-destructive"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={() => setConfirmId(r.id)} className="text-destructive"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">لا توجد نتائج</td></tr>
+                <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">{t("admin.results.empty")}</td></tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
+      <ConfirmDialog
+        open={!!confirmId}
+        onOpenChange={(o) => { if (!o) setConfirmId(null); }}
+        description={t("admin.results.confirmDelete")}
+        onConfirm={() => { if (confirmId) { remove(confirmId); setConfirmId(null); } }}
+      />
     </div>
   );
 };
