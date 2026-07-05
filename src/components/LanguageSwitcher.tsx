@@ -31,20 +31,14 @@ const LanguageSwitcher = ({ variant = "dark", className = "" }: Props) => {
       aria-label="Change language"
       className={`relative inline-flex items-center p-0.5 rounded-full border ${track} backdrop-blur-md ${className}`}
     >
-      {/* Sliding indicator */}
-      <span
-        aria-hidden
-        className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-full bg-primary shadow-sm transition-transform duration-300 ease-out ${
-          current === "ar" ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"
-        }`}
-        style={{ left: "2px" }}
-      />
       <button
         type="button"
         onClick={() => setLang("ar")}
         aria-pressed={current === "ar"}
-        className={`relative z-10 px-3 py-1 rounded-full text-xs font-bold tracking-wide transition-colors duration-300 ${
-          current === "ar" ? "text-white" : inactiveText
+        className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide transition-all duration-300 ${
+          current === "ar"
+            ? "bg-primary text-white shadow-sm scale-[1.02]"
+            : inactiveText
         }`}
       >
         AR
@@ -53,8 +47,10 @@ const LanguageSwitcher = ({ variant = "dark", className = "" }: Props) => {
         type="button"
         onClick={() => setLang("fr")}
         aria-pressed={current === "fr"}
-        className={`relative z-10 px-3 py-1 rounded-full text-xs font-bold tracking-wide transition-colors duration-300 ${
-          current === "fr" ? "text-white" : inactiveText
+        className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide transition-all duration-300 ${
+          current === "fr"
+            ? "bg-primary text-white shadow-sm scale-[1.02]"
+            : inactiveText
         }`}
       >
         FR
