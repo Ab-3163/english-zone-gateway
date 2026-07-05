@@ -144,16 +144,16 @@ const Register = () => {
     // Fire-and-forget WhatsApp notification to admin (after successful save)
     console.log("WhatsApp notification started");
     supabase.functions
-      .invoke("notify-whatsapp-registration", {
+      .invoke("send-whatsapp", {
         body: {
+          type: "registration",
           full_name: parsed.data.full_name,
           phone: parsed.data.phone,
+          age: parsed.data.age ?? null,
           language: parsed.data.language,
           level: parsed.data.level,
-          age: parsed.data.age ?? null,
-          study_center: parsed.data.study_center,
-          preferred_time: parsed.data.preferred_time || "",
-          created_at: new Date().toISOString(),
+          center: parsed.data.study_center,
+          course_type: parsed.data.course_type,
         },
       })
       .then((res) => {
