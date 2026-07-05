@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Search, Plus, Pencil, Trash2, Check, X, MessageCircle, FileImage } from "lucide-react";
+import { Loader2, Search, Plus, Pencil, Trash2, Check, X, MessageCircle, FileImage, FileText, Send } from "lucide-react";
+import { generateAndUploadInvoice } from "@/lib/invoiceGenerator";
 
 type Student = any;
 
@@ -30,6 +31,7 @@ const StudentsManager = () => {
   const [editing, setEditing] = useState<Partial<Student> | null>(null);
   const [saving, setSaving] = useState(false);
   const [viewReceipt, setViewReceipt] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -89,6 +91,75 @@ const StudentsManager = () => {
     const { error } = await supabase.from("students").update(patch).eq("id", id);
     if (error) return toast({ title: "خطأ", description: error.message, variant: "destructive" });
     toast({ title: "تم التحديث" }); load();
+  };
+
+  // Confirm payment => assign 4-digit ID + invoice_number, generate PDF invoice, save URL
+  const confirmPaymentAndInvoice = async (s: Student) => {
+    setBusyId(s.id);
+    try {
+      const method = prompt("طريقة الدفع (نقدًا / بنكيا / بانكيلي...)", s.payment_method || "نقدًا") || "نقدًا";
+      const { data: updated, error } = await supabase.rpc("confirm_payment_and_prepare_invoice" as any, {
+        _student_uuid: s.id,
+        _payment_method: method,
+        _paid_amount: s.paid_amount ?? s.course_fee ?? 1700,
+      });
+      if (error) throw error;
+      const student = updated as any;
+      toast({ title: "تم تأكيد الدفع", description: `Student ID: ${student.student_id}` });
+
+      // Generate the PDF invoice
+      const { path } = await generateAndUploadInvoice({
+        id: student.id,
+        student_id: student.student_id,
+        invoice_number: student.invoice_number,
+        full_name: student.full_name,
+        phone: student.phone,
+        language: student.language,
+        level: student.level,
+        group_name: student.group_name,
+        course_type: student.course_type,
+        paid_amount: Number(student.paid_amount),
+        course_fee: Number(student.course_fee),
+        payment_method: student.payment_method,
+        payment_confirmed_at: student.payment_confirmed_at,
+      });
+
+      await supabase.from("students").update({
+        invoice_pdf_url: path,
+        invoice_generated_at: new Date().toISOString(),
+        invoice_status: "generated",
+      }).eq("id", student.id);
+
+      toast({ title: "تم إنشاء الفاتورة", description: `فاتورة رقم ${student.invoice_number}` });
+      load();
+    } catch (e: any) {
+      toast({ title: "خطأ في إنشاء الفاتورة", description: e.message, variant: "destructive" });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const openInvoice = async (path: string) => {
+    const { data } = await supabase.storage.from("invoices").createSignedUrl(path, 600);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+    else toast({ title: "تعذر فتح الفاتورة", variant: "destructive" });
+  };
+
+  const sendInvoiceWhatsapp = async (s: Student) => {
+    setBusyId(s.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-invoice-whatsapp", {
+        body: { student_id: s.id },
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error("فشل الإرسال - راجع سجل invoice_logs");
+      toast({ title: "تم إرسال الفاتورة", description: "تم إرسالها إلى واتساب الطالب" });
+      load();
+    } catch (e: any) {
+      toast({ title: "فشل الإرسال", description: e.message, variant: "destructive" });
+    } finally {
+      setBusyId(null);
+    }
   };
 
   const openReceipt = async (path: string) => {
@@ -161,7 +232,21 @@ const StudentsManager = () => {
                 <Button size="sm" variant="outline" onClick={() => setEditing(s)} className="h-8 flex-1 min-w-[70px] gap-1"><Pencil className="w-3.5 h-3.5" /> تعديل</Button>
                 <Button size="sm" variant="outline" onClick={() => wa(s.phone)} className="h-8 text-green-700 border-green-200"><MessageCircle className="w-4 h-4" /></Button>
                 {s.payment_status !== "confirmed" && (
-                  <Button size="sm" onClick={() => setStatus(s.id, { payment_status: "confirmed", status: "registered", payment_confirmed_at: new Date().toISOString() })} className="h-8 bg-green-600 hover:bg-green-700 text-white"><Check className="w-4 h-4" /></Button>
+                  <Button size="sm" disabled={busyId === s.id} onClick={() => confirmPaymentAndInvoice(s)} className="h-8 bg-green-600 hover:bg-green-700 text-white gap-1">
+                    {busyId === s.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                    تأكيد الدفع
+                  </Button>
+                )}
+                {s.invoice_pdf_url && (
+                  <Button size="sm" variant="outline" onClick={() => openInvoice(s.invoice_pdf_url)} className="h-8 gap-1">
+                    <FileText className="w-4 h-4" /> فاتورة
+                  </Button>
+                )}
+                {s.invoice_pdf_url && (
+                  <Button size="sm" disabled={busyId === s.id} onClick={() => sendInvoiceWhatsapp(s)} className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white gap-1">
+                    {busyId === s.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    إرسال واتساب
+                  </Button>
                 )}
                 <Button size="sm" variant="outline" onClick={() => remove(s.id)} className="h-8 text-destructive border-destructive/20"><Trash2 className="w-4 h-4" /></Button>
               </div>
@@ -198,9 +283,23 @@ const StudentsManager = () => {
                     <td className="p-3">
                       <div className="flex gap-1 flex-wrap">
                         <Button size="icon" variant="ghost" title="تعديل" onClick={() => setEditing(s)}><Pencil className="w-4 h-4" /></Button>
-                        <Button size="icon" variant="ghost" title="تأكيد الدفع" className="text-green-600" onClick={() => setStatus(s.id, { payment_status: "confirmed", status: "registered", payment_confirmed_at: new Date().toISOString() })}><Check className="w-4 h-4" /></Button>
+                        {s.payment_status !== "confirmed" ? (
+                          <Button size="icon" variant="ghost" title="تأكيد الدفع + إنشاء فاتورة" disabled={busyId === s.id} className="text-green-600" onClick={() => confirmPaymentAndInvoice(s)}>
+                            {busyId === s.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                          </Button>
+                        ) : null}
                         <Button size="icon" variant="ghost" title="رفض الدفع" className="text-destructive" onClick={() => { const r = prompt("سبب الرفض؟"); if (r !== null) setStatus(s.id, { payment_status: "rejected", status: "rejected", rejection_reason: r }); }}><X className="w-4 h-4" /></Button>
                         {s.payment_receipt_url && <Button size="icon" variant="ghost" title="عرض الوصل" onClick={() => openReceipt(s.payment_receipt_url)}><FileImage className="w-4 h-4" /></Button>}
+                        {s.invoice_pdf_url && (
+                          <Button size="icon" variant="ghost" title="عرض الفاتورة" onClick={() => openInvoice(s.invoice_pdf_url)}>
+                            <FileText className="w-4 h-4 text-blue-600" />
+                          </Button>
+                        )}
+                        {s.invoice_pdf_url && (
+                          <Button size="icon" variant="ghost" title="إرسال الفاتورة واتساب" disabled={busyId === s.id} className="text-emerald-600" onClick={() => sendInvoiceWhatsapp(s)}>
+                            {busyId === s.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                          </Button>
+                        )}
                         <Button size="icon" variant="ghost" title="واتساب" className="text-green-600" onClick={() => wa(s.phone)}><MessageCircle className="w-4 h-4" /></Button>
                         <Button size="icon" variant="ghost" title="حذف" className="text-destructive" onClick={() => remove(s.id)}><Trash2 className="w-4 h-4" /></Button>
                       </div>
