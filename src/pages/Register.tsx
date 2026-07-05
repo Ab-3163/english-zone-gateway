@@ -11,7 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const BANKILY_NUMBER = "36423111";
+const BANKILY_NUMBERS = ["37363356", "36487876"];
 const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "application/pdf"];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -46,14 +46,14 @@ const Register = () => {
   const [lastSubmit, setLastSubmit] = useState(0);
   const [receipt, setReceipt] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const copyBankily = async () => {
+  const copyBankily = async (num: string, idx: number) => {
     try {
-      await navigator.clipboard.writeText(BANKILY_NUMBER);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(num);
+      setCopiedIndex(idx);
+      setTimeout(() => setCopiedIndex((v) => (v === idx ? null : v)), 2000);
       toast({ title: t("register.copied"), description: t("register.bankilyNumber") });
     } catch {
       toast({ title: t("register.toastError"), description: t("register.toastError"), variant: "destructive" });
@@ -254,31 +254,35 @@ const Register = () => {
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600">Bankily</span>
                 </div>
                 <div className="p-4 sm:p-5 space-y-3">
-                  <div className="text-center">
-                    <div className="text-xs text-muted-foreground mb-1">{t("register.bankilyNumber")}</div>
-                    <div
-                      className="font-black text-3xl sm:text-4xl tracking-[0.15em] text-foreground select-all py-2"
-                      dir="ltr"
-                    >
-                      {BANKILY_NUMBER}
-                    </div>
-                    <Button
-                      type="button"
-                      onClick={copyBankily}
-                      size="sm"
-                      variant={copied ? "secondary" : "default"}
-                      className="mt-1 gap-1.5 min-w-[140px] transition-all"
-                    >
-                      {copied ? (
-                        <>
-                          <Check className="w-4 h-4" /> {t("register.copied")}
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4" /> {t("register.copyNumber")}
-                        </>
-                      )}
-                    </Button>
+                  <div className="text-xs text-muted-foreground text-center">{t("register.bankilyNumber")}</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {BANKILY_NUMBERS.map((num, idx) => (
+                      <div key={num} className="rounded-xl border border-border bg-background/50 p-3 text-center">
+                        <div
+                          className="font-black text-2xl sm:text-3xl tracking-[0.15em] text-foreground select-all py-1"
+                          dir="ltr"
+                        >
+                          {num}
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={() => copyBankily(num, idx)}
+                          size="sm"
+                          variant={copiedIndex === idx ? "secondary" : "default"}
+                          className="mt-1 gap-1.5 min-w-[130px] transition-all"
+                        >
+                          {copiedIndex === idx ? (
+                            <>
+                              <Check className="w-4 h-4" /> {t("register.copied")}
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-4 h-4" /> {t("register.copyNumber")}
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                   <div className="flex items-start gap-2 bg-green-50 border border-green-200 rounded-xl p-3 text-sm text-green-900 leading-relaxed">
                     <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
