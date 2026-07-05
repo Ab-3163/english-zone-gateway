@@ -54,7 +54,7 @@ const StudentLogin = () => {
           <form onSubmit={handleSubmit} className="bg-card border border-border rounded-2xl p-6 md:p-8 shadow-sm space-y-5">
             <div>
               <label className="text-sm font-medium mb-2 block flex items-center gap-2"><IdCard className="w-4 h-4" /> رقم الطالب (Student ID)</label>
-              <Input value={studentId} onChange={(e) => setStudentId(e.target.value)} placeholder="EZ-2026-0001" dir="ltr" required />
+              <Input value={studentId} onChange={(e) => setStudentId(e.target.value)} placeholder="0001" dir="ltr" required />
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">رقم الهاتف</label>
