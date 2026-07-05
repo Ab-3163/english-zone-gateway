@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BookOpen, Clock, Users, CheckCircle2, Sparkles, ArrowLeft, Loader2 } from "lucide-react";
+import { BookOpen, Clock, Users, CheckCircle2, Sparkles, ArrowLeft, Loader2, Award, Calendar, Star, TrendingUp } from "lucide-react";
 import AnimatedSection from "./AnimatedSection";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -197,78 +197,117 @@ const Courses = () => {
                   animation={index === 0 ? "slide-in-right" : "slide-in-left"}
                   className="h-full w-full"
                 >
-                  <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-xl card-hover group relative h-full flex flex-col hover:border-primary/40 transition-colors">
-                    {/* Course Header */}
-                    <div className={`relative bg-gradient-to-l ${course.color} p-8 md:p-10 overflow-hidden`}>
-                      <div className="absolute inset-0 bg-black/10" />
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-                      <div className="relative z-10 flex flex-col items-center text-center">
-                        <div className="mb-4 group-hover:scale-110 transition-transform duration-500 [&_svg]:w-28 [&_svg]:h-20 md:[&_svg]:w-32 md:[&_svg]:h-24 [&_svg]:drop-shadow-2xl">{course.icon}</div>
-                        <h3 className="text-2xl md:text-3xl font-bold text-white mb-1">{course.title}</h3>
-                        {course.subtitle && <p className="text-white/80">{course.subtitle}</p>}
+                  <div className="bg-card border border-border/60 rounded-3xl overflow-hidden shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] hover:shadow-[0_25px_60px_-15px_rgba(239,68,68,0.35)] group relative h-full flex flex-col hover:border-primary/50 hover:-translate-y-2 transition-all duration-500">
+                    {/* Course Visual Header */}
+                    <div className={`relative bg-gradient-to-br ${course.color} h-56 md:h-64 overflow-hidden`}>
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_60%)]" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                      <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-2xl" />
+                      <div className="absolute -bottom-16 -left-10 w-56 h-56 bg-white/10 rounded-full blur-2xl" />
+
+                      {/* Top badges */}
+                      <div className="absolute top-4 right-4 left-4 flex items-start justify-between z-10">
+                        <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md text-foreground px-2.5 py-1.5 rounded-full text-xs font-bold shadow-lg">
+                          <Award className="w-3.5 h-3.5 text-primary" />
+                          شهادة معتمدة
+                        </div>
+                        <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md text-white px-2.5 py-1.5 rounded-full text-xs font-bold">
+                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                          4.9
+                        </div>
+                      </div>
+
+                      {/* Flag/Icon centered */}
+                      <div className="absolute inset-0 flex items-center justify-center z-0">
+                        <div className="group-hover:scale-110 transition-transform duration-700 [&_svg]:w-32 [&_svg]:h-24 md:[&_svg]:w-40 md:[&_svg]:h-28 [&_svg]:drop-shadow-2xl [&_svg]:rounded-lg">
+                          {course.icon}
+                        </div>
+                      </div>
+
+                      {/* Title overlay bottom */}
+                      <div className="absolute bottom-0 inset-x-0 p-4 md:p-5 z-10">
+                        <h3 className="text-xl md:text-2xl font-black text-white leading-tight" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+                          {course.title}
+                        </h3>
+                        {course.subtitle && <p className="text-white/85 text-xs md:text-sm mt-0.5">{course.subtitle}</p>}
                       </div>
                     </div>
 
                     {/* Course Content */}
-                    <div className="p-6 md:p-8 flex-1 flex flex-col">
-                      {/* Levels */}
-                      <div className="grid grid-cols-3 gap-2 mb-6">
-                        {course.levels.map((level, i) => (
-                          <span
-                            key={i}
-                            className="bg-secondary text-secondary-foreground px-3 py-2 rounded-lg text-sm font-semibold text-center hover:bg-primary hover:text-primary-foreground transition-colors duration-300 cursor-default"
-                          >
-                            {level}
-                          </span>
-                        ))}
+                    <div className="p-5 md:p-7 flex-1 flex flex-col">
+                      {/* Meta badges row */}
+                      <div className="flex flex-wrap gap-2 mb-5">
+                        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs font-bold">
+                          <Calendar className="w-3.5 h-3.5" />
+                          45 يوم
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 bg-blue-500/10 text-blue-600 px-3 py-1.5 rounded-full text-xs font-bold">
+                          <Users className="w-3.5 h-3.5" />
+                          جميع الأعمار
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 bg-green-500/10 text-green-600 px-3 py-1.5 rounded-full text-xs font-bold">
+                          <TrendingUp className="w-3.5 h-3.5" />
+                          تكوين سنة
+                        </span>
+                      </div>
+
+                      {/* Levels with colored dots */}
+                      <div className="mb-5">
+                        <div className="text-xs font-bold text-muted-foreground mb-2">المستويات المتاحة</div>
+                        <div className="flex flex-wrap gap-2">
+                          {course.levels.map((level, i) => {
+                            const dotColors = ["bg-emerald-500", "bg-amber-500", "bg-rose-500"];
+                            return (
+                              <span
+                                key={i}
+                                className="inline-flex items-center gap-2 bg-secondary/70 border border-border text-secondary-foreground px-3 py-1.5 rounded-lg text-xs font-semibold hover:border-primary/40 hover:bg-primary/5 transition-all"
+                              >
+                                <span className={`w-2 h-2 rounded-full ${dotColors[i] || "bg-primary"}`} />
+                                {level}
+                              </span>
+                            );
+                          })}
+                        </div>
                       </div>
 
                       {/* Features */}
-                      <ul className="space-y-3 mb-8 flex-1">
+                      <ul className="space-y-2.5 mb-6 flex-1">
                         {(course.features || []).slice(0, 4).map((feature, i) => (
-                          <li key={i} className="flex items-center gap-3 text-foreground group/item">
-                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover/item:bg-primary group-hover/item:scale-110 transition-all duration-300">
-                              <CheckCircle2 className="w-4 h-4 text-primary group-hover/item:text-primary-foreground transition-colors duration-300" />
+                          <li key={i} className="flex items-center gap-2.5 text-sm text-foreground">
+                            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
                             </div>
-                            <span className="group-hover/item:text-primary transition-colors duration-300">{feature}</span>
+                            <span>{feature}</span>
                           </li>
                         ))}
                       </ul>
 
-                      {/* Info */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-muted-foreground mb-6 pb-6 border-b border-border">
-                        <div className="flex items-center justify-center gap-1">
-                          <Clock className="w-3 h-3 text-primary flex-shrink-0" />
-                          <span>تكوين سنة</span>
+                      {/* Price + CTA */}
+                      <div className="pt-5 border-t border-border">
+                        <div className="flex items-end justify-between mb-4">
+                          <div>
+                            <div className="text-[11px] text-muted-foreground font-medium">السعر</div>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-3xl font-black text-foreground">{displayPrice}</span>
+                              <span className="text-sm font-bold text-muted-foreground">MRU</span>
+                            </div>
+                          </div>
+                          <div className="text-left">
+                            <div className="text-[11px] text-muted-foreground">شامل المواد</div>
+                            <div className="text-xs font-bold text-green-600">✓ دفعة واحدة</div>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-center gap-1">
-                          <Clock className="w-3 h-3 text-primary flex-shrink-0" />
-                          <span>مدة الدورة 45 يوم</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-1">
-                          <Users className="w-3 h-3 text-primary flex-shrink-0" />
-                          <span>جميع الأعمار</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-1">
-                          <BookOpen className="w-3 h-3 text-primary flex-shrink-0" />
-                          <span>مناهج حديثة</span>
-                        </div>
+                        <a
+                          href="https://wa.me/+22220454530?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D9%81%D9%8A%20%C3%89LITE%20ZONE"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-primary w-full text-center flex items-center justify-center gap-2 group/btn shadow-lg shadow-primary/30 hover:shadow-primary/50 py-3.5"
+                        >
+                          سجّل الآن
+                          <ArrowLeft className="w-4 h-4 group-hover/btn:-translate-x-1 transition-transform duration-300" />
+                        </a>
                       </div>
-
-                      {/* CTA */}
-                      <a 
-                        href="https://wa.me/+22220454530?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D9%81%D9%8A%20%C3%89LITE%20ZONE"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-primary w-full text-center flex items-center justify-center gap-2 group/btn"
-                      >
-                        سجّل الآن
-                        <ArrowLeft className="w-4 h-4 group-hover/btn:-translate-x-1 transition-transform duration-300" />
-                      </a>
                     </div>
-
-                    {/* Decorative corner */}
-                    <div className="absolute bottom-0 left-0 w-20 h-20 bg-gradient-to-br from-primary/5 to-transparent rounded-tr-full" />
                   </div>
                 </AnimatedSection>
               ))}
