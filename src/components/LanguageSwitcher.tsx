@@ -16,20 +16,21 @@ const LanguageSwitcher = ({ variant = "dark", className = "" }: Props) => {
   };
 
   const base =
-    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 border";
+    "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-extrabold transition-all duration-300 border-2 shadow-md hover:scale-105 active:scale-95";
   const styles =
     variant === "light"
-      ? "bg-white/10 hover:bg-white/20 text-white border-white/25 backdrop-blur-md"
-      : "bg-primary/10 hover:bg-primary/20 text-primary border-primary/20";
+      ? "bg-white/95 hover:bg-white text-primary border-white backdrop-blur-md"
+      : "bg-primary hover:bg-primary/90 text-white border-primary";
 
   return (
     <button
       onClick={toggle}
-      aria-label="Change language"
+      aria-label="Change language / تغيير اللغة"
+      title={next === "fr" ? "Passer au Français" : "التبديل إلى العربية"}
       className={`${base} ${styles} ${className}`}
     >
-      <Languages className="w-3.5 h-3.5" />
-      <span>{next === "fr" ? "FR" : "ع"}</span>
+      <Languages className="w-4 h-4" />
+      <span className="tracking-wide">{next === "fr" ? "FR" : "AR"}</span>
     </button>
   );
 };
