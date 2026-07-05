@@ -359,7 +359,7 @@ const StudentsManager = () => {
                 <Select value={editing.study_center || ""} onValueChange={(v) => setEditing({ ...editing, study_center: v })}>
                   <SelectTrigger><SelectValue placeholder="-" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="nouakchott">نواكشوط</SelectItem>
+                    <SelectItem value="ksar">Ksar</SelectItem>
                     <SelectItem value="tensoueilim">تنسويلم</SelectItem>
                   </SelectContent>
                 </Select>
