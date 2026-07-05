@@ -298,7 +298,7 @@ const Courses = () => {
                           </div>
                         </div>
                         <a
-                          href="https://wa.me/+22220454530?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D9%81%D9%8A%20%C3%89LITE%20ZONE"
+                          href="/register"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="btn-primary w-full text-center flex items-center justify-center gap-2 group/btn shadow-lg shadow-primary/30 hover:shadow-primary/50 py-3.5"
@@ -336,7 +336,7 @@ const Courses = () => {
                     أوقية جديدة فقط — شاملة جميع المواد التعليمية
                   </p>
                   <a 
-                    href="https://wa.me/+22220454530?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D9%81%D9%8A%20%C3%89LITE%20ZONE"
+                    href="/register"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-white text-primary px-10 py-4 rounded-xl font-bold text-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105"
