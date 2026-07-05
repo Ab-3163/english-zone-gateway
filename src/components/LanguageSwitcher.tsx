@@ -16,23 +16,21 @@ const LanguageSwitcher = ({ variant = "dark", className = "" }: Props) => {
 
   // Higher contrast, always visible labels
   const wrapper =
-    "inline-flex items-center gap-1 px-1.5 py-1.5 rounded-full border-2 shadow-lg backdrop-blur-md transition-all duration-300 hover:shadow-xl";
+    "inline-flex items-center gap-1 px-1.5 py-1.5 rounded-full border-2 shadow-xl backdrop-blur-md transition-all duration-300 hover:shadow-2xl";
   const wrapperTheme =
     variant === "light"
-      ? "bg-white/95 border-white"
-      : "bg-background/95 border-border";
+      ? "bg-white/98 border-white"
+      : "bg-background/98 border-border";
 
   const base =
-    "px-3 py-1.5 rounded-full text-sm sm:text-base font-extrabold tracking-wide transition-all duration-300";
+    "px-3.5 py-2 rounded-full text-base sm:text-lg font-extrabold tracking-wider transition-all duration-300 border-2";
 
   const active =
-    variant === "light"
-      ? "bg-primary text-white shadow-md"
-      : "bg-primary text-white shadow-md";
+    "bg-primary text-white border-primary shadow-md scale-105";
   const inactive =
     variant === "light"
-      ? "text-primary hover:bg-primary/10"
-      : "text-foreground hover:bg-primary/10";
+      ? "bg-white text-foreground border-foreground/20 hover:border-primary/60 hover:bg-primary/5"
+      : "bg-background text-foreground border-border hover:border-primary/60 hover:bg-primary/5";
 
   return (
     <div
