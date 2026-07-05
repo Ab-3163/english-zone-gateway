@@ -1,25 +1,14 @@
 import { GraduationCap, Target, Eye, Award, Zap } from "lucide-react";
 import AnimatedSection from "./AnimatedSection";
-
-const features = [
-  {
-    icon: GraduationCap,
-    title: "خبرة طويلة",
-    description: "أكثر من 10 سنوات في تعليم اللغات مع نتائج مضمونة",
-  },
-  {
-    icon: Target,
-    title: "مناهج متطورة",
-    description: "نستخدم أحدث الأساليب التعليمية المعتمدة دولياً",
-  },
-  {
-    icon: Award,
-    title: "شهادات معتمدة",
-    description: "نمنح شهادات إتمام معتمدة لجميع طلابنا",
-  },
-];
+import { useTranslation } from "react-i18next";
 
 const About = () => {
+  const { t } = useTranslation();
+  const features = [
+    { icon: GraduationCap, title: t("about.features.experience.title"), description: t("about.features.experience.desc") },
+    { icon: Target, title: t("about.features.curriculum.title"), description: t("about.features.curriculum.desc") },
+    { icon: Award, title: t("about.features.certificates.title"), description: t("about.features.certificates.desc") },
+  ];
   return (
     <section id="about" className="section-padding bg-secondary relative overflow-hidden">
       {/* Background decorations */}
@@ -35,14 +24,13 @@ const About = () => {
         <AnimatedSection className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-4">
             <Zap className="w-4 h-4 text-primary" />
-            <span className="text-primary font-semibold">من نحن</span>
+            <span className="text-primary font-semibold">{t("about.badge")}</span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-            نبني جسور التواصل مع العالم
+            {t("about.title")}
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            ÉLITE ZONE هو مركز متخصص في تعليم اللغة الإنجليزية والفرنسية في قلب نواكشوط - موريتانيا.
-            نفخر بتخريج مئات الطلاب الناجحين الذين أصبحوا اليوم قادرين على التواصل بثقة مع العالم.
+            {t("about.description")}
           </p>
         </AnimatedSection>
 
@@ -54,10 +42,9 @@ const About = () => {
               <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/60 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                 <Eye className="w-8 h-8 text-primary-foreground" />
               </div>
-              <h3 className="text-2xl font-bold text-foreground mb-4">رؤيتنا</h3>
+              <h3 className="text-2xl font-bold text-foreground mb-4">{t("about.vision")}</h3>
               <p className="text-muted-foreground leading-relaxed">
-                أن نكون المركز الرائد في تعليم اللغات في موريتانيا، ونساهم في بناء جيل قادر على التواصل
-                مع مختلف الثقافات والاستفادة من الفرص العالمية.
+                {t("about.visionText")}
               </p>
             </div>
           </AnimatedSection>
@@ -68,10 +55,9 @@ const About = () => {
               <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/60 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                 <Target className="w-8 h-8 text-primary-foreground" />
               </div>
-              <h3 className="text-2xl font-bold text-foreground mb-4">رسالتنا</h3>
+              <h3 className="text-2xl font-bold text-foreground mb-4">{t("about.mission")}</h3>
               <p className="text-muted-foreground leading-relaxed">
-                تقديم تعليم لغوي عالي الجودة بأسعار مناسبة، مع التركيز على المهارات العملية
-                التي تمكّن طلابنا من استخدام اللغة في حياتهم اليومية والمهنية.
+                {t("about.missionText")}
               </p>
             </div>
           </AnimatedSection>

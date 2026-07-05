@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { BookOpen, Clock, Users, CheckCircle2, Sparkles, ArrowLeft, Loader2, Award, Calendar, Star, TrendingUp } from "lucide-react";
 import AnimatedSection from "./AnimatedSection";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 // Flag components as SVG for better compatibility
 const USFlag = () => (
@@ -31,38 +32,6 @@ const FranceFlag = () => (
     <rect x="100" width="50" height="100" fill="#ed2939"/>
   </svg>
 );
-
-// Default courses (fallback)
-const defaultCourses = [
-  {
-    id: "english",
-    title: "دورة اللغة الإنجليزية",
-    subtitle: "English Language Course",
-    icon: <USFlag />,
-    color: "from-blue-500 to-blue-600",
-    levels: ["مبتدئ", "متوسط", "متقدم"],
-    features: [
-      "تعلم القراءة والكتابة",
-      "مهارات المحادثة",
-      "قواعد اللغة الأساسية",
-      "تمارين استماع تفاعلية",
-    ],
-  },
-  {
-    id: "french",
-    title: "دورة اللغة الفرنسية",
-    subtitle: "Cours de Français",
-    icon: <FranceFlag />,
-    color: "from-red-500 to-red-600",
-    levels: ["مبتدئ", "متوسط", "متقدم"],
-    features: [
-      "أساسيات اللغة الفرنسية",
-      "النطق الصحيح",
-      "المحادثة اليومية",
-      "الكتابة والتعبير",
-    ],
-  },
-];
 
 interface DatabaseCourse {
   id: string;
@@ -107,6 +76,37 @@ const languageColors: Record<string, string> = {
 };
 
 const Courses = () => {
+  const { t } = useTranslation();
+  const defaultCourses = [
+    {
+      id: "english",
+      title: t("courses.english"),
+      subtitle: t("courses.englishSub"),
+      icon: <USFlag />,
+      color: "from-blue-500 to-blue-600",
+      levels: [t("courses.beginner"), t("courses.intermediate"), t("courses.advanced")],
+      features: [
+        "Reading & Writing / القراءة والكتابة",
+        "Conversation skills / مهارات المحادثة",
+        "Grammar essentials / قواعد اللغة",
+        "Interactive listening / تمارين استماع",
+      ],
+    },
+    {
+      id: "french",
+      title: t("courses.french"),
+      subtitle: t("courses.frenchSub"),
+      icon: <FranceFlag />,
+      color: "from-red-500 to-red-600",
+      levels: [t("courses.beginner"), t("courses.intermediate"), t("courses.advanced")],
+      features: [
+        "Fondamentaux / أساسيات",
+        "Prononciation / النطق الصحيح",
+        "Conversation quotidienne / المحادثة اليومية",
+        "Écriture / الكتابة والتعبير",
+      ],
+    },
+  ];
   const [dbCourses, setDbCourses] = useState<DatabaseCourse[]>([]);
   const [defaultPrice, setDefaultPrice] = useState<number>(1700);
   const [loading, setLoading] = useState(true);
@@ -149,7 +149,7 @@ const Courses = () => {
       subtitle: "",
       icon: languageFlags[course.language || "english"] || <USFlag />,
       color: languageColors[course.language || "english"] || "from-blue-500 to-blue-600",
-      levels: ["مبتدئ", "متوسط", "متقدم"],
+      levels: [t("courses.beginner"), t("courses.intermediate"), t("courses.advanced")],
     })),
     // Then default courses if no DB courses exist
     ...(dbCourses.length === 0 ? defaultCourses : []),
@@ -172,13 +172,13 @@ const Courses = () => {
         <AnimatedSection className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-4">
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-primary font-semibold">دوراتنا</span>
+            <span className="text-primary font-semibold">{t("courses.badge")}</span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-            اختر الدورة <span className="text-gradient">المناسبة</span> لك
+            {t("courses.title")} <span className="text-gradient">{t("courses.titleHighlight")}</span> {t("courses.titleEnd")}
           </h2>
           <p className="text-muted-foreground text-lg">
-            نقدم دورات متخصصة في اللغة الإنجليزية والفرنسية لجميع المستويات
+            {t("courses.subtitle")}
           </p>
         </AnimatedSection>
 
@@ -209,7 +209,7 @@ const Courses = () => {
                       <div className="absolute top-4 right-4 left-4 flex items-start justify-between z-10">
                         <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md text-foreground px-2.5 py-1.5 rounded-full text-xs font-bold shadow-lg">
                           <Award className="w-3.5 h-3.5 text-primary" />
-                          شهادة معتمدة
+                          {t("courses.certified")}
                         </div>
                         <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md text-white px-2.5 py-1.5 rounded-full text-xs font-bold">
                           <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
@@ -237,7 +237,7 @@ const Courses = () => {
                     <div className="p-5 md:p-6 flex-1 flex flex-col gap-5">
                       {/* Levels with colored dots */}
                       <div>
-                        <div className="text-xs font-bold text-muted-foreground mb-2">المستويات المتاحة</div>
+                        <div className="text-xs font-bold text-muted-foreground mb-2">{t("courses.levels")}</div>
                         <div className="grid grid-cols-3 gap-2">
                           {course.levels.map((level, i) => {
                             const dotColors = ["bg-emerald-500", "bg-amber-500", "bg-rose-500"];
@@ -270,19 +270,19 @@ const Courses = () => {
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex items-center gap-2 bg-primary/5 rounded-lg px-3 py-2">
                           <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
-                          <span className="font-semibold text-foreground">45 يوم</span>
+                          <span className="font-semibold text-foreground">{t("courses.duration")}</span>
                         </div>
                         <div className="flex items-center gap-2 bg-primary/5 rounded-lg px-3 py-2">
                           <Award className="w-4 h-4 text-primary flex-shrink-0" />
-                          <span className="font-semibold text-foreground">شهادة معتمدة</span>
+                          <span className="font-semibold text-foreground">{t("courses.certified")}</span>
                         </div>
                         <div className="flex items-center gap-2 bg-primary/5 rounded-lg px-3 py-2">
                           <Users className="w-4 h-4 text-primary flex-shrink-0" />
-                          <span className="font-semibold text-foreground">جميع الأعمار</span>
+                          <span className="font-semibold text-foreground">{t("courses.ages")}</span>
                         </div>
                         <div className="flex items-center gap-2 bg-primary/5 rounded-lg px-3 py-2">
                           <BookOpen className="w-4 h-4 text-primary flex-shrink-0" />
-                          <span className="font-semibold text-foreground">مناهج حديثة</span>
+                          <span className="font-semibold text-foreground">{t("courses.modern")}</span>
                         </div>
                       </div>
 
@@ -290,22 +290,22 @@ const Courses = () => {
                       <div className="pt-4 border-t border-border">
                         <div className="flex items-end justify-between mb-3">
                           <div>
-                            <div className="text-[11px] text-muted-foreground font-medium">السعر</div>
+                            <div className="text-[11px] text-muted-foreground font-medium">{t("courses.price")}</div>
                             <div className="flex items-baseline gap-1">
                               <span className="text-2xl md:text-3xl font-black text-foreground">{displayPrice}</span>
                               <span className="text-sm font-bold text-muted-foreground">MRU</span>
                             </div>
                           </div>
                           <div className="text-left">
-                            <div className="text-[11px] text-muted-foreground">شامل المواد</div>
-                            <div className="text-xs font-bold text-green-600">✓ دفعة واحدة</div>
+                            <div className="text-[11px] text-muted-foreground">{t("courses.includes")}</div>
+                            <div className="text-xs font-bold text-green-600">{t("courses.onePay")}</div>
                           </div>
                         </div>
                         <a
                           href="/register"
                           className="btn-primary w-full text-center flex items-center justify-center gap-2 group/btn shadow-lg shadow-primary/30 hover:shadow-primary/50 py-4 text-base"
                         >
-                          سجّل الآن
+                          {t("courses.register")}
                           <ArrowLeft className="w-4 h-4 group-hover/btn:-translate-x-1 transition-transform duration-300" />
                         </a>
                       </div>
@@ -325,17 +325,17 @@ const Courses = () => {
                 
                 <div className="relative z-10">
                   <span className="inline-block px-4 py-1 bg-white/20 rounded-full text-white/90 text-sm font-medium mb-4">
-                    عرض خاص
+                    {t("courses.specialOffer")}
                   </span>
                   <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                    رسوم الدورة الواحدة
+                    {t("courses.oneCourse")}
                   </h3>
                   <div className="flex items-center justify-center gap-2 mb-4">
                     <span className="text-5xl md:text-7xl font-bold text-white animate-pulse-glow">{displayPrice}</span>
                     <span className="text-2xl text-white/90">MRU</span>
                   </div>
                   <p className="text-white/80 text-lg mb-8">
-                    أوقية جديدة فقط — شاملة جميع المواد التعليمية
+                    {t("courses.currencyNote")}
                   </p>
                   <a 
                     href="/register"
@@ -343,7 +343,7 @@ const Courses = () => {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-white text-primary px-10 py-4 rounded-xl font-bold text-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105"
                   >
-                    ابدأ رحلتك التعليمية
+                    {t("courses.startJourney")}
                     <ArrowLeft className="w-5 h-5" />
                   </a>
                 </div>

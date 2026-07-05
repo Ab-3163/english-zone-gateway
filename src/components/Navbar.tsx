@@ -1,23 +1,25 @@
 import { useState, useEffect } from "react";
 import { Menu, X, Shield } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import logo from "@/assets/logo.jpeg";
 import { supabase } from "@/integrations/supabase/client";
 import { checkAdminSession } from "@/lib/adminAuth";
-
-const navLinks = [
-  { href: "#home", label: "الرئيسية" },
-  { href: "#about", label: "من نحن" },
-  { href: "#courses", label: "الدورات" },
-  { href: "#why-us", label: "لماذا نحن" },
-  { href: "#gallery", label: "المعرض" },
-  { href: "#testimonials", label: "آراء الطلاب" },
-  { href: "/results", label: "النتائج" },
-  { href: "/student-login", label: "بوابة الطالب" },
-  { href: "#location", label: "موقعنا" },
-];
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const Navbar = () => {
+  const { t } = useTranslation();
+  const navLinks = [
+    { href: "#home", label: t("nav.home") },
+    { href: "#about", label: t("nav.about") },
+    { href: "#courses", label: t("nav.courses") },
+    { href: "#why-us", label: t("nav.whyUs") },
+    { href: "#gallery", label: t("nav.gallery") },
+    { href: "#testimonials", label: t("nav.testimonials") },
+    { href: "/results", label: t("nav.results") },
+    { href: "/student-login", label: t("nav.studentPortal") },
+    { href: "#location", label: t("nav.location") },
+  ];
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
@@ -139,7 +141,7 @@ const Navbar = () => {
               className="flex items-center gap-2 px-3 py-2 bg-primary/10 rounded-lg text-primary text-sm font-medium hover:bg-primary/20 transition-colors animate-fade-in"
             >
               <Shield className="w-4 h-4" />
-              لوحة التحكم
+              {t("nav.adminPanel")}
             </button>
           )}
         </div>
@@ -168,24 +170,28 @@ const Navbar = () => {
               </a>
             );
           })}
+          <LanguageSwitcher variant={isScrolled ? "dark" : "light"} className="ml-2" />
           <a 
             href="/register"
             className="btn-primary mr-4"
           >
-            سجّل الآن
+            {t("nav.register")}
           </a>
         </div>
 
           {/* Mobile Menu Button */}
-          <button
-            className={`md:hidden p-2 rounded-lg transition-colors ${
-              isScrolled ? "text-foreground" : "text-white"
-            }`}
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            <LanguageSwitcher variant={isScrolled ? "dark" : "light"} />
+            <button
+              className={`p-2 rounded-lg transition-colors ${
+                isScrolled ? "text-foreground" : "text-white"
+              }`}
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label={t("nav.toggleMenu")}
+            >
+              {isOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
@@ -220,7 +226,7 @@ const Navbar = () => {
                   className="flex items-center justify-center gap-2 px-4 py-3 bg-primary/10 rounded-lg text-primary font-medium hover:bg-primary/20 transition-colors"
                 >
                   <Shield className="w-4 h-4" />
-                  لوحة التحكم
+                  {t("nav.adminPanel")}
                 </button>
               )}
               <a 
@@ -228,7 +234,7 @@ const Navbar = () => {
                 className="btn-primary text-center mt-2" 
                 onClick={() => setIsOpen(false)}
               >
-                سجّل الآن
+                {t("nav.register")}
               </a>
             </div>
           </div>
