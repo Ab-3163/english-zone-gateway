@@ -6,71 +6,71 @@ import { ChevronDown, Sparkles, Award, GraduationCap, Users, BookOpen } from "lu
 
 const Hero = () => {
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section id="home" className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
       {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-110 blur-[2px]"
         style={{ backgroundImage: `url(${heroBg})` }}
       />
-      
+
       {/* Overlay */}
       <div className="absolute inset-0 hero-overlay" />
-      
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.55)_80%)]" />
+
       {/* Particles */}
       <ParticlesBackground />
-      
+
       {/* Animated gradient orbs */}
-      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse-glow" />
-      <div className="absolute bottom-1/4 left-1/4 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: "1s" }} />
-      
+      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/25 rounded-full blur-3xl animate-pulse-glow" />
+      <div className="absolute bottom-1/4 left-1/4 w-72 h-72 bg-primary/15 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: "1s" }} />
+
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 text-center pt-20">
+      <div className="relative z-10 container mx-auto px-4 text-center pt-24 pb-10">
         <div className="max-w-4xl mx-auto">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 mb-8 animate-fade-in">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-white/90 text-sm font-medium">مركز تكوين وتعليم اللغات</span>
-          </div>
-          
           {/* Logo */}
-          <div className="mb-6 md:mb-10 animate-float">
+          <div className="mb-4 sm:mb-6 animate-float">
             <div className="relative inline-block">
-              <img 
-                src={logo} 
-                alt="ÉLITE ZONE" 
-                className="h-40 sm:h-48 md:h-56 lg:h-64 w-auto mx-auto rounded-3xl shadow-2xl animate-pulse-glow ring-2 ring-white/20"
+              <img
+                src={logo}
+                alt="ÉLITE ZONE"
+                className="h-24 sm:h-32 md:h-44 lg:h-52 w-auto mx-auto rounded-2xl shadow-2xl ring-2 ring-white/30"
               />
-              <div className="absolute -inset-2 bg-gradient-to-r from-primary to-primary/50 rounded-3xl blur-xl opacity-40 -z-10" />
+              <div className="absolute -inset-2 bg-gradient-to-r from-primary to-primary/50 rounded-3xl blur-2xl opacity-50 -z-10" />
             </div>
           </div>
-          
+
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/25 mb-4 animate-fade-in">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            <span className="text-white text-xs sm:text-sm font-medium">مركز تكوين وتعليم اللغات</span>
+          </div>
+
           {/* Title */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold text-white mb-6 leading-tight tracking-tight animate-fade-in-up" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
-            مرحباً بكم في{" "}
-            <span className="text-gradient-animated bg-gradient-to-r from-primary via-white to-primary bg-clip-text text-transparent bg-[length:200%_auto]">
+          <h1 className="text-[2.15rem] leading-[1.15] sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-3 tracking-tight text-shadow-hero animate-fade-in-up" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
+            مرحباً بكم في
+            <br className="sm:hidden" />
+            <span className="inline-block mt-1 sm:mt-0 sm:mr-3 text-gradient-animated bg-gradient-to-r from-primary via-white to-primary bg-clip-text text-transparent bg-[length:200%_auto]">
               ÉLITE ZONE
             </span>
           </h1>
-          
+
           {/* Subtitle */}
-          <p className="text-xl sm:text-2xl md:text-3xl text-white/95 font-semibold mb-6 animate-fade-in-up" style={{ animationDelay: "0.4s", animationFillMode: "both" }}>
+          <p className="text-lg sm:text-2xl md:text-3xl text-white font-bold mb-5 text-shadow-hero animate-fade-in-up" style={{ animationDelay: "0.4s", animationFillMode: "both" }}>
             بوابتك نحو إتقان اللغات العالمية
           </p>
-          
-          {/* Description */}
-          <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-10 animate-fade-in-up leading-relaxed" style={{ animationDelay: "0.6s", animationFillMode: "both" }}>
-            نقدم لكم أفضل دورات تعليم اللغة الإنجليزية والفرنسية في نواكشوط - موريتانيا
-            <br />
-            مع أساتذة متخصصين ومناهج حديثة تضمن لكم النجاح
+
+          {/* Description — shorter */}
+          <p className="text-sm sm:text-base md:text-lg text-white/90 max-w-xl mx-auto mb-7 leading-relaxed text-shadow-hero animate-fade-in-up" style={{ animationDelay: "0.6s", animationFillMode: "both" }}>
+            دورات الإنجليزية والفرنسية بإشراف أساتذة متخصصين في نواكشوط
           </p>
-          
+
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style={{ animationDelay: "0.8s", animationFillMode: "both" }}>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center animate-fade-in-up" style={{ animationDelay: "0.8s", animationFillMode: "both" }}>
             <a 
               href="https://wa.me/+22220454530?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D9%81%D9%8A%20%C3%89LITE%20ZONE"
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-primary text-lg group"
+              className="btn-primary text-base sm:text-lg group shadow-2xl shadow-primary/40"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
                 سجّل الآن
@@ -79,14 +79,14 @@ const Hero = () => {
                 </svg>
               </span>
             </a>
-            <a href="#about" className="group border-2 border-white text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:bg-white hover:text-foreground relative overflow-hidden">
+            <a href="#about" className="group border-2 border-white/80 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 hover:bg-white hover:text-foreground relative overflow-hidden backdrop-blur-sm bg-white/5">
               <span className="relative z-10">تعرف علينا</span>
               <div className="absolute inset-0 bg-white transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
             </a>
           </div>
           
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto mt-14 md:mt-16 animate-fade-in-up" style={{ animationDelay: "1s", animationFillMode: "both" }}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 max-w-4xl mx-auto mt-10 md:mt-14 animate-fade-in-up" style={{ animationDelay: "1s", animationFillMode: "both" }}>
             {[
               { icon: Users, end: 500, suffix: "+", label: "طالب ناجح" },
               { icon: BookOpen, end: 12, suffix: "+", label: "دورة تعليمية" },
@@ -95,14 +95,14 @@ const Hero = () => {
             ].map((stat, i) => {
               const Icon = stat.icon;
               return (
-                <div key={i} className="group bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 md:p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40">
-                  <Icon className="w-6 h-6 md:w-7 md:h-7 text-primary mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                <div key={i} className="group bg-white/10 hover:bg-white/15 backdrop-blur-xl border border-white/15 rounded-2xl p-3 md:p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 shadow-lg">
+                  <Icon className="w-5 h-5 md:w-7 md:h-7 text-primary mx-auto mb-1.5 group-hover:scale-110 transition-transform" />
                   <CountUpNumber 
                     end={stat.end} 
                     suffix={stat.suffix} 
-                    className="text-2xl md:text-4xl font-extrabold text-white"
+                    className="text-xl md:text-4xl font-extrabold text-white block"
                   />
-                  <div className="text-white/70 text-xs md:text-sm mt-1 font-medium">{stat.label}</div>
+                  <div className="text-white/80 text-[11px] md:text-sm mt-1 font-medium">{stat.label}</div>
                 </div>
               );
             })}
@@ -111,10 +111,10 @@ const Hero = () => {
       </div>
       
       {/* Scroll indicator */}
-      <a href="#about" className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce-subtle group cursor-pointer">
+      <a href="#about" className="hidden md:flex absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce-subtle group cursor-pointer">
         <div className="flex flex-col items-center gap-2">
-          <span className="text-white/60 text-sm group-hover:text-primary transition-colors">اكتشف المزيد</span>
-          <ChevronDown className="w-6 h-6 text-white/60 group-hover:text-primary transition-colors" />
+          <span className="text-white/70 text-sm group-hover:text-primary transition-colors">اكتشف المزيد</span>
+          <ChevronDown className="w-6 h-6 text-white/70 group-hover:text-primary transition-colors" />
         </div>
       </a>
     </section>
