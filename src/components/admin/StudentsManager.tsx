@@ -320,7 +320,7 @@ const StudentsManager = () => {
           {editing && (
             <div className="grid md:grid-cols-2 gap-3 text-sm">
               {editing.id && <div><label className="text-xs text-muted-foreground">Student ID</label><Input value={editing.student_id || ""} disabled dir="ltr" /></div>}
-              {!editing.id && <div><label className="text-xs text-muted-foreground">Student ID (اتركه فارغًا للتوليد التلقائي)</label><Input value={editing.student_id || ""} onChange={(e) => setEditing({ ...editing, student_id: e.target.value })} placeholder="EZ-2026-0001" dir="ltr" /></div>}
+              {!editing.id && <div><label className="text-xs text-muted-foreground">Student ID (اتركه فارغًا للتوليد التلقائي)</label><Input value={editing.student_id || ""} onChange={(e) => setEditing({ ...editing, student_id: e.target.value })} placeholder="0001" dir="ltr" maxLength={4} /></div>}
               <div><label className="text-xs text-muted-foreground">الاسم الكامل *</label><Input value={editing.full_name || ""} onChange={(e) => setEditing({ ...editing, full_name: e.target.value })} /></div>
               <div><label className="text-xs text-muted-foreground">الهاتف *</label><Input value={editing.phone || ""} onChange={(e) => setEditing({ ...editing, phone: e.target.value })} dir="ltr" /></div>
               <div><label className="text-xs text-muted-foreground">البريد</label><Input value={editing.email || ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })} dir="ltr" /></div>
