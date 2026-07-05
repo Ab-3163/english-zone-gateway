@@ -307,8 +307,10 @@ export type Database = {
           language: string
           level: string | null
           notes: string | null
+          payment_method: string | null
           phone: string
           preferred_time: string | null
+          receipt_url: string | null
           status: string
           updated_at: string
         }
@@ -321,8 +323,10 @@ export type Database = {
           language: string
           level?: string | null
           notes?: string | null
+          payment_method?: string | null
           phone: string
           preferred_time?: string | null
+          receipt_url?: string | null
           status?: string
           updated_at?: string
         }
@@ -335,8 +339,10 @@ export type Database = {
           language?: string
           level?: string | null
           notes?: string | null
+          payment_method?: string | null
           phone?: string
           preferred_time?: string | null
+          receipt_url?: string | null
           status?: string
           updated_at?: string
         }
