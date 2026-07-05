@@ -128,7 +128,7 @@ const Navbar = () => {
                   alt="ÉLITE ZONE" 
                   className={`w-auto rounded-lg transition-all duration-300 group-hover:scale-105 ${
                     isScrolled ? "h-11" : "h-14 shadow-lg"
-                  }`} 
+                  } ${location.pathname === "/" && !isScrolled ? "opacity-0 pointer-events-none" : ""}`}
                 />
               <div className="absolute -inset-1 bg-primary/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
             </div>
