@@ -189,17 +189,17 @@ const Courses = () => {
         ) : (
           <>
             {/* Courses Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto mb-12 px-2 sm:px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7 max-w-7xl mx-auto mb-12">
               {displayCourses.map((course, index) => (
                 <AnimatedSection
                   key={course.id}
                   delay={index * 200}
                   animation={index === 0 ? "slide-in-right" : "slide-in-left"}
-                  className="h-full w-full"
+                  className="h-full w-full flex justify-center"
                 >
-                  <div className="bg-card border border-border/60 rounded-3xl overflow-hidden shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] hover:shadow-[0_25px_60px_-15px_rgba(239,68,68,0.35)] group relative h-full flex flex-col hover:border-primary/50 hover:-translate-y-2 transition-all duration-500">
+                  <div className="w-full max-w-[420px] md:max-w-none bg-card border border-border/60 rounded-3xl overflow-hidden shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] hover:shadow-[0_25px_60px_-15px_rgba(239,68,68,0.35)] group relative h-full flex flex-col hover:border-primary/50 hover:-translate-y-2 transition-all duration-500">
                     {/* Course Visual Header */}
-                    <div className={`relative bg-gradient-to-br ${course.color} h-56 md:h-64 overflow-hidden`}>
+                    <div className={`relative bg-gradient-to-br ${course.color} h-[220px] md:h-56 overflow-hidden`}>
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_60%)]" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                       <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-2xl" />
@@ -219,7 +219,7 @@ const Courses = () => {
 
                       {/* Flag/Icon centered */}
                       <div className="absolute inset-0 flex items-center justify-center z-0">
-                        <div className="group-hover:scale-110 transition-transform duration-700 [&_svg]:w-32 [&_svg]:h-24 md:[&_svg]:w-40 md:[&_svg]:h-28 [&_svg]:drop-shadow-2xl [&_svg]:rounded-lg">
+                        <div className="group-hover:scale-110 transition-transform duration-700 [&_svg]:w-36 [&_svg]:h-24 md:[&_svg]:w-40 md:[&_svg]:h-28 [&_svg]:drop-shadow-2xl [&_svg]:rounded-lg">
                           {course.icon}
                         </div>
                       </div>
@@ -234,33 +234,17 @@ const Courses = () => {
                     </div>
 
                     {/* Course Content */}
-                    <div className="p-5 md:p-7 flex-1 flex flex-col">
-                      {/* Meta badges row */}
-                      <div className="flex flex-wrap gap-2 mb-5">
-                        <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs font-bold">
-                          <Calendar className="w-3.5 h-3.5" />
-                          45 يوم
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 bg-blue-500/10 text-blue-600 px-3 py-1.5 rounded-full text-xs font-bold">
-                          <Users className="w-3.5 h-3.5" />
-                          جميع الأعمار
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 bg-green-500/10 text-green-600 px-3 py-1.5 rounded-full text-xs font-bold">
-                          <TrendingUp className="w-3.5 h-3.5" />
-                          تكوين سنة
-                        </span>
-                      </div>
-
+                    <div className="p-5 md:p-6 flex-1 flex flex-col gap-5">
                       {/* Levels with colored dots */}
-                      <div className="mb-5">
+                      <div>
                         <div className="text-xs font-bold text-muted-foreground mb-2">المستويات المتاحة</div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="grid grid-cols-3 gap-2">
                           {course.levels.map((level, i) => {
                             const dotColors = ["bg-emerald-500", "bg-amber-500", "bg-rose-500"];
                             return (
                               <span
                                 key={i}
-                                className="inline-flex items-center gap-2 bg-secondary/70 border border-border text-secondary-foreground px-3 py-1.5 rounded-lg text-xs font-semibold hover:border-primary/40 hover:bg-primary/5 transition-all"
+                                className="inline-flex items-center justify-center gap-1.5 bg-secondary/70 border border-border text-secondary-foreground px-2 py-2 rounded-lg text-xs font-semibold hover:border-primary/40 hover:bg-primary/5 transition-all"
                               >
                                 <span className={`w-2 h-2 rounded-full ${dotColors[i] || "bg-primary"}`} />
                                 {level}
@@ -271,24 +255,44 @@ const Courses = () => {
                       </div>
 
                       {/* Features */}
-                      <ul className="space-y-2.5 mb-6 flex-1">
+                      <ul className="space-y-2.5 flex-1">
                         {(course.features || []).slice(0, 4).map((feature, i) => (
-                          <li key={i} className="flex items-center gap-2.5 text-sm text-foreground">
+                          <li key={i} className="flex items-start gap-2.5 text-sm text-foreground">
                             <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                               <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
                             </div>
-                            <span>{feature}</span>
+                            <span className="leading-snug break-words">{feature}</span>
                           </li>
                         ))}
                       </ul>
 
+                      {/* Course info grid (2 cols) */}
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="flex items-center gap-2 bg-primary/5 rounded-lg px-3 py-2">
+                          <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="font-semibold text-foreground">45 يوم</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-primary/5 rounded-lg px-3 py-2">
+                          <Award className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="font-semibold text-foreground">شهادة معتمدة</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-primary/5 rounded-lg px-3 py-2">
+                          <Users className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="font-semibold text-foreground">جميع الأعمار</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-primary/5 rounded-lg px-3 py-2">
+                          <BookOpen className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="font-semibold text-foreground">مناهج حديثة</span>
+                        </div>
+                      </div>
+
                       {/* Price + CTA */}
-                      <div className="pt-5 border-t border-border">
-                        <div className="flex items-end justify-between mb-4">
+                      <div className="pt-4 border-t border-border">
+                        <div className="flex items-end justify-between mb-3">
                           <div>
                             <div className="text-[11px] text-muted-foreground font-medium">السعر</div>
                             <div className="flex items-baseline gap-1">
-                              <span className="text-3xl font-black text-foreground">{displayPrice}</span>
+                              <span className="text-2xl md:text-3xl font-black text-foreground">{displayPrice}</span>
                               <span className="text-sm font-bold text-muted-foreground">MRU</span>
                             </div>
                           </div>
@@ -299,9 +303,7 @@ const Courses = () => {
                         </div>
                         <a
                           href="/register"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn-primary w-full text-center flex items-center justify-center gap-2 group/btn shadow-lg shadow-primary/30 hover:shadow-primary/50 py-3.5"
+                          className="btn-primary w-full text-center flex items-center justify-center gap-2 group/btn shadow-lg shadow-primary/30 hover:shadow-primary/50 py-4 text-base"
                         >
                           سجّل الآن
                           <ArrowLeft className="w-4 h-4 group-hover/btn:-translate-x-1 transition-transform duration-300" />
