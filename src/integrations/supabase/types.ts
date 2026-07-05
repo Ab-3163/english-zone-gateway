@@ -220,6 +220,50 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_logs: {
+        Row: {
+          channel: string
+          created_at: string
+          error_message: string | null
+          id: string
+          invoice_number: string | null
+          phone: string | null
+          provider_response: Json | null
+          status: string
+          student_id: string | null
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          invoice_number?: string | null
+          phone?: string | null
+          provider_response?: Json | null
+          status: string
+          student_id?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          invoice_number?: string | null
+          phone?: string | null
+          provider_response?: Json | null
+          status?: string
+          student_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_logs_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       media: {
         Row: {
           created_at: string
@@ -389,6 +433,11 @@ export type Database = {
           grade: string | null
           group_name: string | null
           id: string
+          invoice_generated_at: string | null
+          invoice_number: string | null
+          invoice_pdf_url: string | null
+          invoice_sent_at: string | null
+          invoice_status: string | null
           language: string | null
           level: string | null
           next_level: string | null
@@ -396,6 +445,7 @@ export type Database = {
           paid_amount: number | null
           pass_status: string | null
           payment_confirmed_at: string | null
+          payment_method: string | null
           payment_receipt_url: string | null
           payment_status: string
           phone: string
@@ -429,6 +479,11 @@ export type Database = {
           grade?: string | null
           group_name?: string | null
           id?: string
+          invoice_generated_at?: string | null
+          invoice_number?: string | null
+          invoice_pdf_url?: string | null
+          invoice_sent_at?: string | null
+          invoice_status?: string | null
           language?: string | null
           level?: string | null
           next_level?: string | null
@@ -436,6 +491,7 @@ export type Database = {
           paid_amount?: number | null
           pass_status?: string | null
           payment_confirmed_at?: string | null
+          payment_method?: string | null
           payment_receipt_url?: string | null
           payment_status?: string
           phone: string
@@ -469,6 +525,11 @@ export type Database = {
           grade?: string | null
           group_name?: string | null
           id?: string
+          invoice_generated_at?: string | null
+          invoice_number?: string | null
+          invoice_pdf_url?: string | null
+          invoice_sent_at?: string | null
+          invoice_status?: string | null
           language?: string | null
           level?: string | null
           next_level?: string | null
@@ -476,6 +537,7 @@ export type Database = {
           paid_amount?: number | null
           pass_status?: string | null
           payment_confirmed_at?: string | null
+          payment_method?: string | null
           payment_receipt_url?: string | null
           payment_status?: string
           phone?: string
@@ -519,7 +581,68 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      confirm_payment_and_prepare_invoice: {
+        Args: {
+          _paid_amount?: number
+          _payment_method?: string
+          _student_uuid: string
+        }
+        Returns: {
+          absences: number | null
+          admin_note: string | null
+          age: number | null
+          attendance_rate: number | null
+          average: number | null
+          birth_date: string | null
+          course_fee: number | null
+          course_type: string | null
+          created_at: string
+          eligible_promotion: boolean | null
+          email: string | null
+          final_exam_score: number | null
+          first_exam_score: number | null
+          full_name: string
+          grade: string | null
+          group_name: string | null
+          id: string
+          invoice_generated_at: string | null
+          invoice_number: string | null
+          invoice_pdf_url: string | null
+          invoice_sent_at: string | null
+          invoice_status: string | null
+          language: string | null
+          level: string | null
+          next_level: string | null
+          notes: string | null
+          paid_amount: number | null
+          pass_status: string | null
+          payment_confirmed_at: string | null
+          payment_method: string | null
+          payment_receipt_url: string | null
+          payment_status: string
+          phone: string
+          preferred_time: string | null
+          rejection_reason: string | null
+          remaining_amount: number | null
+          room: string | null
+          status: string
+          student_id: string
+          study_days: string | null
+          study_time: string | null
+          teacher: string | null
+          total_sessions: number | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "students"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       generate_certificate_number: { Args: never; Returns: string }
+      generate_invoice_number: { Args: never; Returns: string }
+      generate_short_student_id: { Args: never; Returns: string }
       generate_student_id: { Args: never; Returns: string }
       get_student_by_credentials: {
         Args: { _phone: string; _student_id: string }
@@ -541,6 +664,11 @@ export type Database = {
           grade: string | null
           group_name: string | null
           id: string
+          invoice_generated_at: string | null
+          invoice_number: string | null
+          invoice_pdf_url: string | null
+          invoice_sent_at: string | null
+          invoice_status: string | null
           language: string | null
           level: string | null
           next_level: string | null
@@ -548,6 +676,7 @@ export type Database = {
           paid_amount: number | null
           pass_status: string | null
           payment_confirmed_at: string | null
+          payment_method: string | null
           payment_receipt_url: string | null
           payment_status: string
           phone: string
