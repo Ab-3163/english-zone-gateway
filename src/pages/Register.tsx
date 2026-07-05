@@ -154,6 +154,7 @@ const Register = () => {
           level: parsed.data.level,
           center: parsed.data.study_center,
           course_type: parsed.data.course_type,
+          created_at: new Date().toISOString(),
         },
       })
       .then((res) => {
