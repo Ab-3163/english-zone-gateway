@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { 
   LayoutDashboard, 
   Megaphone, 
@@ -16,7 +17,8 @@ import {
   Users,
   Home,
   Award,
-  Bell
+  Bell,
+  Languages
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { checkAdminSession, signOut } from "@/lib/adminAuth";
@@ -36,6 +38,8 @@ import { supabase } from "@/integrations/supabase/client";
 type Tab = "stats" | "students" | "announcements" | "courses" | "media" | "results" | "registrations" | "certificates" | "settings";
 
 const AdminDashboard = () => {
+  const { t, i18n } = useTranslation();
+  const isFr = i18n.language === "fr";
   const [activeTab, setActiveTab] = useState<Tab>("stats");
   const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== "undefined" && window.innerWidth >= 768);
   const [loading, setLoading] = useState(true);
@@ -82,22 +86,22 @@ const AdminDashboard = () => {
   const handleLogout = async () => {
     await signOut();
     toast({
-      title: "تم تسجيل الخروج",
-      description: "تم تسجيل الخروج بنجاح",
+      title: t("admin.logout"),
+      description: t("admin.logoutSuccess"),
     });
     navigate("/");
   };
 
   const tabs = [
-    { id: "stats" as Tab, label: "الرئيسية", icon: Home },
-    { id: "students" as Tab, label: "الطلاب", icon: Users, badge: counters.students },
-    { id: "registrations" as Tab, label: "الطلبات الجديدة", icon: ClipboardList, badge: counters.pending, accent: true },
-    { id: "announcements" as Tab, label: "الإعلانات", icon: Megaphone },
-    { id: "courses" as Tab, label: "الدورات", icon: GraduationCap, badge: counters.courses },
-    { id: "media" as Tab, label: "الوسائط", icon: Image },
-    { id: "results" as Tab, label: "النتائج", icon: FileSpreadsheet, badge: counters.results },
-    { id: "certificates" as Tab, label: "الشهادات", icon: Award, badge: counters.certificates },
-    { id: "settings" as Tab, label: "الإعدادات", icon: Settings },
+    { id: "stats" as Tab, label: t("admin.tabs.stats"), icon: Home },
+    { id: "students" as Tab, label: t("admin.tabs.students"), icon: Users, badge: counters.students },
+    { id: "registrations" as Tab, label: t("admin.tabs.registrations"), icon: ClipboardList, badge: counters.pending, accent: true },
+    { id: "announcements" as Tab, label: t("admin.tabs.announcements"), icon: Megaphone },
+    { id: "courses" as Tab, label: t("admin.tabs.courses"), icon: GraduationCap, badge: counters.courses },
+    { id: "media" as Tab, label: t("admin.tabs.media"), icon: Image },
+    { id: "results" as Tab, label: t("admin.tabs.results"), icon: FileSpreadsheet, badge: counters.results },
+    { id: "certificates" as Tab, label: t("admin.tabs.certificates"), icon: Award, badge: counters.certificates },
+    { id: "settings" as Tab, label: t("admin.tabs.settings"), icon: Settings },
   ];
 
   if (loading) {
@@ -109,11 +113,11 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] dark:bg-background flex" dir="rtl">
+    <div className="min-h-screen bg-[#F3F4F6] dark:bg-background flex" dir={isFr ? "ltr" : "rtl"}>
       {/* Sidebar */}
       <aside className={`
-        fixed md:static inset-y-0 right-0 z-50
-        ${sidebarOpen ? "translate-x-0" : "translate-x-full md:translate-x-0"}
+        fixed md:static inset-y-0 ${isFr ? "left-0" : "right-0"} z-50
+        ${sidebarOpen ? "translate-x-0" : (isFr ? "-translate-x-full md:translate-x-0" : "translate-x-full md:translate-x-0")}
         w-72 md:w-64 bg-[#0B1F4D] text-white border-l border-white/5 shadow-xl
         transition-transform duration-300
         flex flex-col
@@ -124,13 +128,13 @@ const AdminDashboard = () => {
             <img src={logo} alt="ÉLITE ZONE" className="h-9 w-9 rounded-lg object-cover shrink-0 ring-2 ring-white/10" />
             <div>
               <h1 className="font-bold text-white text-sm md:text-base tracking-wide">ÉLITE ZONE</h1>
-              <p className="text-xs text-white/60">لوحة الإدارة</p>
+              <p className="text-xs text-white/60">{t("admin.panel")}</p>
             </div>
           </div>
           <button
             className="md:hidden p-2 rounded-lg hover:bg-white/10 text-white"
             onClick={() => setSidebarOpen(false)}
-            aria-label="إغلاق"
+            aria-label={t("admin.close")}
           >
             <X className="w-5 h-5" />
           </button>
@@ -184,7 +188,7 @@ const AdminDashboard = () => {
             onClick={handleLogout}
           >
             <LogOut className="w-5 h-5" />
-            تسجيل الخروج
+            {t("admin.logout")}
           </Button>
         </div>
       </aside>
@@ -205,7 +209,7 @@ const AdminDashboard = () => {
             <button
               className="md:hidden p-2 rounded-lg hover:bg-muted shrink-0 text-[#0B1F4D]"
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              aria-label="القائمة"
+              aria-label={t("admin.menu")}
             >
               <Menu className="w-6 h-6" />
             </button>
@@ -220,9 +224,18 @@ const AdminDashboard = () => {
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <button
+              onClick={() => i18n.changeLanguage(isFr ? "ar" : "fr")}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border hover:border-[#EF4444]/30 text-xs font-semibold text-[#0B1F4D] hover:text-[#EF4444] transition"
+              aria-label={t("admin.switchLang")}
+              title={t("admin.switchLang")}
+            >
+              <Languages className="w-4 h-4" />
+              {isFr ? "AR" : "FR"}
+            </button>
+            <button
               onClick={() => setActiveTab("registrations")}
               className="relative p-2 rounded-lg hover:bg-muted transition text-[#0B1F4D]"
-              aria-label="الإشعارات"
+              aria-label={t("admin.notifications")}
             >
               <Bell className="w-5 h-5" />
               {counters.pending > 0 && (
@@ -236,7 +249,7 @@ const AdminDashboard = () => {
               target="_blank"
               className="hidden sm:inline-block text-xs font-medium text-[#0B1F4D] hover:text-[#EF4444] transition px-3 py-1.5 rounded-lg border border-border hover:border-[#EF4444]/30"
             >
-              عرض الموقع ←
+              {t("admin.viewSite")} ←
             </a>
           </div>
         </header>

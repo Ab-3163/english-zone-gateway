@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Loader2, Trash2, Download, Check, X, MessageCircle, Phone, GraduationCap, Calendar, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import ConfirmDialog from "./ConfirmDialog";
 
 interface Reg {
   id: string;
@@ -22,10 +24,6 @@ interface Reg {
   created_at: string;
 }
 
-const statusLabels: Record<string, string> = {
-  new: "جديد", contacted: "تم التواصل", confirmed: "تم القبول", rejected: "مرفوض",
-};
-
 const statusVariant: Record<string, string> = {
   new: "bg-blue-100 text-blue-700 border-blue-200",
   contacted: "bg-amber-100 text-amber-700 border-amber-200",
@@ -33,19 +31,26 @@ const statusVariant: Record<string, string> = {
   rejected: "bg-red-100 text-red-700 border-red-200",
 };
 
-const centerLabel = (c: string | null) =>
-  c === "nouakchott" ? "نواكشوط" : c === "tensoueilim" ? "تنسويلم" : "—";
-
 const RegistrationsManager = () => {
+  const { t, i18n } = useTranslation();
+  const statusLabels: Record<string, string> = {
+    new: t("admin.reg.statusNew"),
+    contacted: t("admin.reg.statusContacted"),
+    confirmed: t("admin.reg.statusConfirmed"),
+    rejected: t("admin.reg.statusRejected"),
+  };
+  const centerLabel = (c: string | null) =>
+    c === "nouakchott" ? t("register.centerNouakchott") : c === "tensoueilim" ? t("register.centerTensoueilim") : "—";
   const [rows, setRows] = useState<Reg[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
   const fetch = async () => {
     setLoading(true);
     const { data, error } = await supabase.from("registrations").select("*").order("created_at", { ascending: false });
-    if (error) toast({ title: "خطأ", description: "فشل الجلب", variant: "destructive" });
+    if (error) toast({ title: t("admin.common.error"), description: t("admin.reg.fetchFail"), variant: "destructive" });
     else setRows(data || []);
     setLoading(false);
   };
@@ -53,15 +58,14 @@ const RegistrationsManager = () => {
 
   const updateStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("registrations").update({ status }).eq("id", id);
-    if (error) toast({ title: "خطأ", description: error.message, variant: "destructive" });
-    else { toast({ title: "تم", description: "تم تحديث الحالة" }); fetch(); }
+    if (error) toast({ title: t("admin.common.error"), description: error.message, variant: "destructive" });
+    else { toast({ title: t("admin.common.done"), description: t("admin.reg.statusUpdated") }); fetch(); }
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("حذف هذا الطلب؟")) return;
+  const doRemove = async (id: string) => {
     const { error } = await supabase.from("registrations").delete().eq("id", id);
-    if (error) toast({ title: "خطأ", description: error.message, variant: "destructive" });
-    else { toast({ title: "تم", description: "تم الحذف" }); fetch(); }
+    if (error) toast({ title: t("admin.common.error"), description: error.message, variant: "destructive" });
+    else { toast({ title: t("admin.common.done"), description: t("admin.reg.deleted") }); fetch(); }
   };
 
   const acceptRegistration = async (r: Reg) => {
@@ -83,11 +87,11 @@ const RegistrationsManager = () => {
       status: "registered",
     } as any);
     if (insErr) {
-      toast({ title: "خطأ", description: insErr.message, variant: "destructive" });
+      toast({ title: t("admin.common.error"), description: insErr.message, variant: "destructive" });
       return;
     }
     await supabase.from("registrations").update({ status: "confirmed" }).eq("id", r.id);
-    toast({ title: "تم القبول", description: "تم إنشاء الطالب بنجاح" });
+    toast({ title: t("admin.reg.accepted"), description: t("admin.reg.acceptedDesc") });
     fetch();
   };
 
@@ -120,24 +124,24 @@ const RegistrationsManager = () => {
       <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
         <div className="flex flex-col sm:flex-row gap-2 flex-1">
           <div className="relative flex-1">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="بحث بالاسم أو الهاتف..." value={search} onChange={e => setSearch(e.target.value)} className="pr-9 h-11" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input placeholder={t("admin.reg.searchPh")} value={search} onChange={e => setSearch(e.target.value)} className="ps-9 h-11" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full sm:w-44 h-11"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">كل الحالات</SelectItem>
+              <SelectItem value="all">{t("admin.reg.allStatuses")}</SelectItem>
               {Object.entries(statusLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
-        <Button onClick={exportCSV} variant="outline" className="gap-2 h-11 w-full sm:w-auto"><Download className="w-4 h-4" /> تصدير CSV</Button>
+        <Button onClick={exportCSV} variant="outline" className="gap-2 h-11 w-full sm:w-auto"><Download className="w-4 h-4" /> {t("admin.common.export")}</Button>
       </div>
 
       {/* Mobile cards */}
       <div className="md:hidden space-y-3">
         {filtered.length === 0 && (
-          <div className="bg-card border rounded-2xl p-8 text-center text-muted-foreground">لا توجد طلبات</div>
+          <div className="bg-card border rounded-2xl p-8 text-center text-muted-foreground">{t("admin.reg.empty")}</div>
         )}
         {filtered.map(r => (
           <div key={r.id} className="bg-card border rounded-2xl p-4 shadow-sm space-y-3">
@@ -157,25 +161,25 @@ const RegistrationsManager = () => {
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5"><GraduationCap className="w-3.5 h-3.5" /><span>{r.language}{r.level ? ` · ${r.level}` : ""}</span></div>
-              <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /><span>{new Date(r.created_at).toLocaleDateString("ar")}</span></div>
-              <div className="col-span-2 flex items-center gap-1.5"><span className="font-medium">المركز:</span><span>{centerLabel(r.study_center)}</span></div>
+              <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /><span>{new Date(r.created_at).toLocaleDateString(i18n.language)}</span></div>
+              <div className="col-span-2 flex items-center gap-1.5"><span className="font-medium">{t("admin.reg.center")}:</span><span>{centerLabel(r.study_center)}</span></div>
             </div>
             {r.notes && <p className="text-xs bg-muted/50 rounded-lg p-2 line-clamp-2">{r.notes}</p>}
             <div className="flex flex-wrap gap-2 pt-1">
               {r.status !== "confirmed" && (
                 <Button size="sm" onClick={() => acceptRegistration(r)} className="bg-green-600 hover:bg-green-700 text-white flex-1 min-w-[80px] h-9 gap-1">
-                  <Check className="w-4 h-4" /> قبول
+                  <Check className="w-4 h-4" /> {t("admin.reg.accept")}
                 </Button>
               )}
               {r.status !== "rejected" && (
                 <Button size="sm" variant="outline" onClick={() => updateStatus(r.id, "rejected")} className="flex-1 min-w-[80px] h-9 gap-1">
-                  <X className="w-4 h-4" /> رفض
+                  <X className="w-4 h-4" /> {t("admin.reg.reject")}
                 </Button>
               )}
               <Button size="sm" variant="outline" onClick={() => openWa(r.phone)} className="h-9 gap-1 text-green-700 border-green-200 hover:bg-green-50">
                 <MessageCircle className="w-4 h-4" />
               </Button>
-              <Button size="sm" variant="outline" onClick={() => remove(r.id)} className="h-9 text-destructive border-destructive/20 hover:bg-destructive/10">
+              <Button size="sm" variant="outline" onClick={() => setPendingDelete(r.id)} className="h-9 text-destructive border-destructive/20 hover:bg-destructive/10">
                 <Trash2 className="w-4 h-4" />
               </Button>
             </div>
@@ -189,15 +193,15 @@ const RegistrationsManager = () => {
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr>
-                <th className="text-right p-3">الاسم</th>
-                <th className="text-right p-3">الهاتف</th>
-                <th className="text-right p-3">اللغة</th>
-                <th className="text-right p-3">المستوى</th>
-                <th className="text-right p-3">النوع</th>
-                <th className="text-right p-3">المركز</th>
-                <th className="text-right p-3">التاريخ</th>
-                <th className="text-right p-3">الحالة</th>
-                <th className="text-right p-3">إجراءات</th>
+                <th className="text-start p-3">{t("admin.reg.name")}</th>
+                <th className="text-start p-3">{t("admin.reg.phone")}</th>
+                <th className="text-start p-3">{t("admin.reg.language")}</th>
+                <th className="text-start p-3">{t("admin.reg.level")}</th>
+                <th className="text-start p-3">{t("admin.reg.type")}</th>
+                <th className="text-start p-3">{t("admin.reg.center")}</th>
+                <th className="text-start p-3">{t("admin.reg.date")}</th>
+                <th className="text-start p-3">{t("admin.reg.status")}</th>
+                <th className="text-start p-3">{t("admin.reg.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -210,9 +214,9 @@ const RegistrationsManager = () => {
                   <td className="p-3" dir="ltr">{r.phone}</td>
                   <td className="p-3">{r.language}</td>
                   <td className="p-3">{r.level || "—"}</td>
-                  <td className="p-3">{r.course_type === "in_person" ? "حضورية" : r.course_type === "online" ? "أونلاين" : "—"}</td>
+                  <td className="p-3">{r.course_type === "in_person" ? t("admin.reg.inPerson") : r.course_type === "online" ? t("admin.reg.online") : "—"}</td>
                   <td className="p-3">{centerLabel(r.study_center)}</td>
-                  <td className="p-3 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("ar")}</td>
+                  <td className="p-3 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString(i18n.language)}</td>
                   <td className="p-3">
                     <span className={`text-xs px-2 py-1 rounded-full border ${statusVariant[r.status] || "bg-muted"}`}>
                       {statusLabels[r.status] || r.status}
@@ -222,18 +226,18 @@ const RegistrationsManager = () => {
                     <div className="flex gap-1">
                       {r.status !== "confirmed" && (
                         <Button size="sm" onClick={() => acceptRegistration(r)} className="h-8 gap-1 bg-green-600 hover:bg-green-700 text-white">
-                          <Check className="w-3.5 h-3.5" /> قبول
+                          <Check className="w-3.5 h-3.5" /> {t("admin.reg.accept")}
                         </Button>
                       )}
                       {r.status !== "rejected" && (
                         <Button size="sm" variant="outline" onClick={() => updateStatus(r.id, "rejected")} className="h-8 gap-1">
-                          <X className="w-3.5 h-3.5" /> رفض
+                          <X className="w-3.5 h-3.5" /> {t("admin.reg.reject")}
                         </Button>
                       )}
                       <Button size="icon" variant="ghost" onClick={() => openWa(r.phone)} className="h-8 w-8 text-green-700">
                         <MessageCircle className="w-4 h-4" />
                       </Button>
-                      <Button size="icon" variant="ghost" onClick={() => remove(r.id)} className="h-8 w-8 text-destructive">
+                      <Button size="icon" variant="ghost" onClick={() => setPendingDelete(r.id)} className="h-8 w-8 text-destructive">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -241,12 +245,22 @@ const RegistrationsManager = () => {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={9} className="p-6 text-center text-muted-foreground">لا توجد طلبات</td></tr>
+                <tr><td colSpan={9} className="p-6 text-center text-muted-foreground">{t("admin.reg.empty")}</td></tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        onOpenChange={(o) => !o && setPendingDelete(null)}
+        description={t("admin.reg.confirmDelete")}
+        onConfirm={() => {
+          if (pendingDelete) doRemove(pendingDelete);
+          setPendingDelete(null);
+        }}
+      />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Search, Plus, Pencil, Trash2, Check, X, MessageCircle, FileImage, FileText, Send } from "lucide-react";
 import { generateAndUploadInvoice } from "@/lib/invoiceGenerator";
+import ConfirmDialog from "./ConfirmDialog";
 
 type Student = any;
 
@@ -22,6 +24,7 @@ const empty: Partial<Student> = {
 };
 
 const StudentsManager = () => {
+  const { t } = useTranslation();
   const [list, setList] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -32,6 +35,7 @@ const StudentsManager = () => {
   const [saving, setSaving] = useState(false);
   const [viewReceipt, setViewReceipt] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -55,7 +59,7 @@ const StudentsManager = () => {
   const save = async () => {
     if (!editing) return;
     if (!editing.full_name || !editing.phone) {
-      toast({ title: "خطأ", description: "الاسم والهاتف مطلوبان", variant: "destructive" }); return;
+      toast({ title: t("admin.common.error"), description: t("admin.students.nameRequired"), variant: "destructive" }); return;
     }
     setSaving(true);
     const payload: any = { ...editing };
@@ -67,24 +71,23 @@ const StudentsManager = () => {
     });
     if (editing.id) {
       const { error } = await supabase.from("students").update(payload).eq("id", editing.id);
-      if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); setSaving(false); return; }
-      toast({ title: "تم", description: "تم تحديث الطالب" });
+      if (error) { toast({ title: t("admin.common.error"), description: error.message, variant: "destructive" }); setSaving(false); return; }
+      toast({ title: t("admin.common.done"), description: t("admin.students.updated") });
     } else {
       delete payload.id;
       delete payload.student_id; // auto-generated unless provided
       if (editing.student_id) payload.student_id = editing.student_id;
       const { error } = await supabase.from("students").insert(payload);
-      if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); setSaving(false); return; }
-      toast({ title: "تم", description: "تم إضافة الطالب" });
+      if (error) { toast({ title: t("admin.common.error"), description: error.message, variant: "destructive" }); setSaving(false); return; }
+      toast({ title: t("admin.common.done"), description: t("admin.students.added") });
     }
     setSaving(false); setEditing(null); load();
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("حذف الطالب نهائياً؟")) return;
+  const doRemove = async (id: string) => {
     const { error } = await supabase.from("students").delete().eq("id", id);
-    if (error) return toast({ title: "خطأ", description: error.message, variant: "destructive" });
-    toast({ title: "تم الحذف" }); load();
+    if (error) return toast({ title: t("admin.common.error"), description: error.message, variant: "destructive" });
+    toast({ title: t("admin.students.deleted") }); load();
   };
 
   const setStatus = async (id: string, patch: any) => {
@@ -97,7 +100,7 @@ const StudentsManager = () => {
   const confirmPaymentAndInvoice = async (s: Student) => {
     setBusyId(s.id);
     try {
-      const method = prompt("طريقة الدفع (نقدًا / بنكيا / بانكيلي...)", s.payment_method || "نقدًا") || "نقدًا";
+      const method = prompt(t("admin.students.methodPrompt"), s.payment_method || "نقدًا") || "نقدًا";
       const { data: updated, error } = await supabase.rpc("confirm_payment_and_prepare_invoice" as any, {
         _student_uuid: s.id,
         _payment_method: method,
@@ -105,7 +108,7 @@ const StudentsManager = () => {
       });
       if (error) throw error;
       const student = updated as any;
-      toast({ title: "تم تأكيد الدفع", description: `Student ID: ${student.student_id}` });
+      toast({ title: t("admin.students.paymentConfirmed"), description: `Student ID: ${student.student_id}` });
 
       // Generate the PDF invoice
       const { path } = await generateAndUploadInvoice({
@@ -131,10 +134,10 @@ const StudentsManager = () => {
         invoice_status: "generated",
       }).eq("id", student.id);
 
-      toast({ title: "تم إنشاء الفاتورة", description: `فاتورة رقم ${student.invoice_number}` });
+      toast({ title: t("admin.students.invoiceCreated"), description: `${student.invoice_number}` });
       load();
     } catch (e: any) {
-      toast({ title: "خطأ في إنشاء الفاتورة", description: e.message, variant: "destructive" });
+      toast({ title: t("admin.common.error"), description: e.message, variant: "destructive" });
     } finally {
       setBusyId(null);
     }
@@ -143,7 +146,7 @@ const StudentsManager = () => {
   const openInvoice = async (path: string) => {
     const { data } = await supabase.storage.from("invoices").createSignedUrl(path, 600);
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
-    else toast({ title: "تعذر فتح الفاتورة", variant: "destructive" });
+    else toast({ title: t("admin.students.openInvoiceFail"), variant: "destructive" });
   };
 
   const sendInvoiceWhatsapp = async (s: Student) => {
@@ -153,11 +156,11 @@ const StudentsManager = () => {
         body: { student_id: s.id },
       });
       if (error) throw error;
-      if (!data?.success) throw new Error("فشل الإرسال - راجع سجل invoice_logs");
-      toast({ title: "تم إرسال الفاتورة", description: "تم إرسالها إلى واتساب الطالب" });
+      if (!data?.success) throw new Error(t("admin.students.sendFail"));
+      toast({ title: t("admin.students.invoiceSent"), description: t("admin.students.invoiceSentDesc") });
       load();
     } catch (e: any) {
-      toast({ title: "فشل الإرسال", description: e.message, variant: "destructive" });
+      toast({ title: t("admin.students.sendFail"), description: e.message, variant: "destructive" });
     } finally {
       setBusyId(null);
     }
@@ -166,7 +169,7 @@ const StudentsManager = () => {
   const openReceipt = async (path: string) => {
     const { data } = await supabase.storage.from("payment-receipts").createSignedUrl(path, 300);
     if (data?.signedUrl) setViewReceipt(data.signedUrl);
-    else toast({ title: "تعذّر فتح الوصل", variant: "destructive" });
+    else toast({ title: t("admin.students.openReceiptFail"), variant: "destructive" });
   };
 
   const wa = (phone: string) => {
@@ -178,38 +181,38 @@ const StudentsManager = () => {
     <div className="space-y-4">
       <div className="flex gap-2 flex-wrap items-center">
         <div className="relative flex-1 min-w-full sm:min-w-[200px]">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="بحث: رقم الطالب، الاسم، الهاتف..." value={search} onChange={(e) => setSearch(e.target.value)} className="pr-9" />
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder={t("admin.students.searchPh")} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9" />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-[160px] flex-1 sm:flex-none"><SelectValue placeholder="الحالة" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[160px] flex-1 sm:flex-none"><SelectValue placeholder={t("admin.students.statusPh")} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">كل الحالات</SelectItem>
+            <SelectItem value="all">{t("admin.students.allStatuses")}</SelectItem>
             {STATUS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={payFilter} onValueChange={setPayFilter}>
-          <SelectTrigger className="w-full sm:w-[160px] flex-1 sm:flex-none"><SelectValue placeholder="حالة الدفع" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[160px] flex-1 sm:flex-none"><SelectValue placeholder={t("admin.students.payPh")} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">كل المدفوعات</SelectItem>
+            <SelectItem value="all">{t("admin.students.allPay")}</SelectItem>
             {PAY_STATUS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={levelFilter} onValueChange={setLevelFilter}>
-          <SelectTrigger className="w-full sm:w-[120px] flex-1 sm:flex-none"><SelectValue placeholder="المستوى" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[120px] flex-1 sm:flex-none"><SelectValue placeholder={t("admin.students.levelPh")} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">كل المستويات</SelectItem>
+            <SelectItem value="all">{t("admin.students.allLevels")}</SelectItem>
             {["A1","A2","B1","B2","C1"].map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Button onClick={() => setEditing({ ...empty })} className="w-full sm:w-auto"><Plus className="w-4 h-4 ml-1" /> إضافة طالب</Button>
+        <Button onClick={() => setEditing({ ...empty })} className="w-full sm:w-auto"><Plus className="w-4 h-4 ms-1" /> {t("admin.students.addStudent")}</Button>
       </div>
 
       {loading ? <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin" /></div> : (
       <>
         {/* Mobile cards */}
         <div className="md:hidden space-y-3">
-          {filtered.length === 0 && <div className="bg-card border rounded-2xl p-8 text-center text-muted-foreground">لا توجد نتائج</div>}
+          {filtered.length === 0 && <div className="bg-card border rounded-2xl p-8 text-center text-muted-foreground">{t("admin.students.empty")}</div>}
           {filtered.map((s) => (
             <div key={s.id} className="bg-card border rounded-2xl p-4 shadow-sm space-y-3">
               <div className="flex items-start justify-between gap-2">
@@ -230,26 +233,26 @@ const StudentsManager = () => {
                 </div>
               </div>
               <div className="flex flex-wrap gap-1.5 pt-1">
-                <Button size="sm" variant="outline" onClick={() => setEditing(s)} className="h-8 flex-1 min-w-[70px] gap-1"><Pencil className="w-3.5 h-3.5" /> تعديل</Button>
+                <Button size="sm" variant="outline" onClick={() => setEditing(s)} className="h-8 flex-1 min-w-[70px] gap-1"><Pencil className="w-3.5 h-3.5" /> {t("admin.common.edit")}</Button>
                 <Button size="sm" variant="outline" onClick={() => wa(s.phone)} className="h-8 text-green-700 border-green-200"><MessageCircle className="w-4 h-4" /></Button>
                 {s.payment_status !== "confirmed" && (
                   <Button size="sm" disabled={busyId === s.id} onClick={() => confirmPaymentAndInvoice(s)} className="h-8 bg-green-600 hover:bg-green-700 text-white gap-1">
                     {busyId === s.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                    تأكيد الدفع
+                    {t("admin.students.confirmPay")}
                   </Button>
                 )}
                 {s.invoice_pdf_url && (
                   <Button size="sm" variant="outline" onClick={() => openInvoice(s.invoice_pdf_url)} className="h-8 gap-1">
-                    <FileText className="w-4 h-4" /> فاتورة
+                    <FileText className="w-4 h-4" /> {t("admin.students.invoice")}
                   </Button>
                 )}
                 {s.invoice_pdf_url && (
                   <Button size="sm" disabled={busyId === s.id} onClick={() => sendInvoiceWhatsapp(s)} className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white gap-1">
                     {busyId === s.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    إرسال واتساب
+                    {t("admin.students.sendWa")}
                   </Button>
                 )}
-                <Button size="sm" variant="outline" onClick={() => remove(s.id)} className="h-8 text-destructive border-destructive/20"><Trash2 className="w-4 h-4" /></Button>
+                <Button size="sm" variant="outline" onClick={() => setPendingDelete(s.id)} className="h-8 text-destructive border-destructive/20"><Trash2 className="w-4 h-4" /></Button>
               </div>
             </div>
           ))}
@@ -261,14 +264,14 @@ const StudentsManager = () => {
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
                 <tr>
-                  <th className="text-right p-3">Student ID</th>
-                  <th className="text-right p-3">الاسم</th>
-                  <th className="text-right p-3">الهاتف</th>
-                  <th className="text-right p-3">اللغة/المستوى</th>
-                  <th className="text-right p-3">القسم</th>
-                  <th className="text-right p-3">الدفع</th>
-                  <th className="text-right p-3">الحالة</th>
-                  <th className="text-right p-3">إجراءات</th>
+                  <th className="text-start p-3">ID</th>
+                  <th className="text-start p-3">{t("admin.students.fullName")}</th>
+                  <th className="text-start p-3">{t("admin.students.phone")}</th>
+                  <th className="text-start p-3">{t("admin.students.language")}/{t("admin.students.level")}</th>
+                  <th className="text-start p-3">{t("admin.students.group")}</th>
+                  <th className="text-start p-3">{t("admin.students.payment")}</th>
+                  <th className="text-start p-3">{t("admin.students.studentStatus")}</th>
+                  <th className="text-start p-3">{t("admin.students.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -283,31 +286,31 @@ const StudentsManager = () => {
                     <td className="p-3"><Badge variant={s.status === "registered" ? "default" : "outline"}>{s.status}</Badge></td>
                     <td className="p-3">
                       <div className="flex gap-1 flex-wrap">
-                        <Button size="icon" variant="ghost" title="تعديل" onClick={() => setEditing(s)}><Pencil className="w-4 h-4" /></Button>
+                        <Button size="icon" variant="ghost" title={t("admin.common.edit")} onClick={() => setEditing(s)}><Pencil className="w-4 h-4" /></Button>
                         {s.payment_status !== "confirmed" ? (
-                          <Button size="icon" variant="ghost" title="تأكيد الدفع + إنشاء فاتورة" disabled={busyId === s.id} className="text-green-600" onClick={() => confirmPaymentAndInvoice(s)}>
+                          <Button size="icon" variant="ghost" title={t("admin.students.confirmPay")} disabled={busyId === s.id} className="text-green-600" onClick={() => confirmPaymentAndInvoice(s)}>
                             {busyId === s.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                           </Button>
                         ) : null}
-                        <Button size="icon" variant="ghost" title="رفض الدفع" className="text-destructive" onClick={() => { const r = prompt("سبب الرفض؟"); if (r !== null) setStatus(s.id, { payment_status: "rejected", status: "rejected", rejection_reason: r }); }}><X className="w-4 h-4" /></Button>
-                        {s.payment_receipt_url && <Button size="icon" variant="ghost" title="عرض الوصل" onClick={() => openReceipt(s.payment_receipt_url)}><FileImage className="w-4 h-4" /></Button>}
+                        <Button size="icon" variant="ghost" title={t("admin.reg.reject")} className="text-destructive" onClick={() => { const r = prompt(t("admin.students.rejectReason")); if (r !== null) setStatus(s.id, { payment_status: "rejected", status: "rejected", rejection_reason: r }); }}><X className="w-4 h-4" /></Button>
+                        {s.payment_receipt_url && <Button size="icon" variant="ghost" title={t("admin.students.receiptTitle")} onClick={() => openReceipt(s.payment_receipt_url)}><FileImage className="w-4 h-4" /></Button>}
                         {s.invoice_pdf_url && (
-                          <Button size="icon" variant="ghost" title="عرض الفاتورة" onClick={() => openInvoice(s.invoice_pdf_url)}>
+                          <Button size="icon" variant="ghost" title={t("admin.students.invoice")} onClick={() => openInvoice(s.invoice_pdf_url)}>
                             <FileText className="w-4 h-4 text-blue-600" />
                           </Button>
                         )}
                         {s.invoice_pdf_url && (
-                          <Button size="icon" variant="ghost" title="إرسال الفاتورة واتساب" disabled={busyId === s.id} className="text-emerald-600" onClick={() => sendInvoiceWhatsapp(s)}>
+                          <Button size="icon" variant="ghost" title={t("admin.students.sendWa")} disabled={busyId === s.id} className="text-emerald-600" onClick={() => sendInvoiceWhatsapp(s)}>
                             {busyId === s.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                           </Button>
                         )}
-                        <Button size="icon" variant="ghost" title="واتساب" className="text-green-600" onClick={() => wa(s.phone)}><MessageCircle className="w-4 h-4" /></Button>
-                        <Button size="icon" variant="ghost" title="حذف" className="text-destructive" onClick={() => remove(s.id)}><Trash2 className="w-4 h-4" /></Button>
+                        <Button size="icon" variant="ghost" title="WhatsApp" className="text-green-600" onClick={() => wa(s.phone)}><MessageCircle className="w-4 h-4" /></Button>
+                        <Button size="icon" variant="ghost" title={t("admin.common.delete")} className="text-destructive" onClick={() => setPendingDelete(s.id)}><Trash2 className="w-4 h-4" /></Button>
                       </div>
                     </td>
                   </tr>
                 ))}
-                {filtered.length === 0 && <tr><td colSpan={8} className="text-center p-8 text-muted-foreground">لا توجد نتائج</td></tr>}
+                {filtered.length === 0 && <tr><td colSpan={8} className="text-center p-8 text-muted-foreground">{t("admin.students.empty")}</td></tr>}
               </tbody>
             </table>
           </div>
@@ -317,7 +320,7 @@ const StudentsManager = () => {
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" dir="rtl">
-          <DialogHeader><DialogTitle>{editing?.id ? "تعديل طالب" : "إضافة طالب جديد"}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editing?.id ? t("admin.students.editStudent") : t("admin.students.addNew")}</DialogTitle></DialogHeader>
           {editing && (
             <div className="grid md:grid-cols-2 gap-3 text-sm">
               {editing.id && <div><label className="text-xs text-muted-foreground">Student ID</label><Input value={editing.student_id || ""} disabled dir="ltr" /></div>}
@@ -396,22 +399,32 @@ const StudentsManager = () => {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditing(null)}>إلغاء</Button>
-            <Button onClick={save} disabled={saving}>{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "حفظ"}</Button>
+            <Button variant="outline" onClick={() => setEditing(null)}>{t("admin.common.cancel")}</Button>
+            <Button onClick={save} disabled={saving}>{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : t("admin.common.save")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={!!viewReceipt} onOpenChange={(o) => !o && setViewReceipt(null)}>
         <DialogContent className="max-w-2xl" dir="rtl">
-          <DialogHeader><DialogTitle>وصل الدفع</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("admin.students.receiptTitle")}</DialogTitle></DialogHeader>
           {viewReceipt && (viewReceipt.includes(".pdf") ? (
             <iframe src={viewReceipt} className="w-full h-[70vh]" />
           ) : (
-            <img src={viewReceipt} alt="وصل الدفع" className="w-full rounded-lg" />
+            <img src={viewReceipt} alt={t("admin.students.receiptTitle")} className="w-full rounded-lg" />
           ))}
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        onOpenChange={(o) => !o && setPendingDelete(null)}
+        description={t("admin.students.confirmDelete")}
+        onConfirm={() => {
+          if (pendingDelete) doRemove(pendingDelete);
+          setPendingDelete(null);
+        }}
+      />
     </div>
   );
 };
