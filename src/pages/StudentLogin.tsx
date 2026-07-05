@@ -64,7 +64,7 @@ const StudentLogin = () => {
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "تسجيل الدخول"}
             </Button>
             <p className="text-xs text-center text-muted-foreground">
-              ليس لديك حساب؟ <a href="/student-register" className="text-primary hover:underline">سجّل الآن</a>
+              ليس لديك حساب؟ <a href="/register" className="text-primary hover:underline">سجّل عبر الموقع</a>
             </p>
           </form>
         </div>
