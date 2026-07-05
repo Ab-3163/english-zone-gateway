@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,8 @@ const corsHeaders = {
 const KAPSO_BASE = Deno.env.get("KAPSO_BASE_URL") || "https://api.kapso.ai/meta/whatsapp/v24.0";
 const DEFAULT_ADMIN = Deno.env.get("ADMIN_WHATSAPP_NUMBER") || "22236423111";
 const PHONE_NUMBER_ID = Deno.env.get("KAPSO_PHONE_NUMBER_ID") || "597907523413541";
+const ADMIN_DASHBOARD_URL =
+  Deno.env.get("ADMIN_DASHBOARD_URL") || "https://www.elitezone.center/admin";
 
 type MessageType =
   | "registration"
@@ -38,6 +41,7 @@ interface Payload {
   score?: number | string;
   grade?: string;
   created_at?: string;
+  notes?: string;
 }
 
 const labelLang = (v?: string | null) =>
@@ -49,24 +53,56 @@ const labelCourseType = (v?: string | null) =>
 const labelCenter = (v?: string | null) =>
   v === "nouakchott" ? "نواكشوط" : v === "tensoueilim" ? "تنسويلم" : (v || "-");
 
-function buildBody(p: Payload): { to: string; body: Record<string, unknown> } {
+async function getPendingCount(): Promise<number | null> {
+  try {
+    const url = Deno.env.get("SUPABASE_URL");
+    const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!url || !key) return null;
+    const sb = createClient(url, key);
+    const { count, error } = await sb
+      .from("registrations")
+      .select("id", { count: "exact", head: true })
+      .in("status", ["payment_review", "pending", "new"]);
+    if (error) {
+      console.error("send-whatsapp: pending count failed", error.message);
+      return null;
+    }
+    return count ?? 0;
+  } catch (e) {
+    console.error("send-whatsapp: pending count exception", e);
+    return null;
+  }
+}
+
+async function buildBody(p: Payload): Promise<{ to: string; body: Record<string, unknown> }> {
   const to = (p.to || DEFAULT_ADMIN).replace(/[^\d]/g, "");
   const type = p.type || "registration";
 
   let text = "";
   switch (type) {
-    case "registration":
+    case "registration": {
+      const pending = await getPendingCount();
+      const regDate = new Date(p.created_at || Date.now()).toLocaleString("ar", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
       text =
-        `🔔 طالب جديد قام بالتسجيل.\n\n` +
-        `الاسم: ${p.full_name || "-"}\n` +
-        `الهاتف: ${p.phone || "-"}\n` +
-        `العمر: ${p.age ?? "-"}\n` +
-        `اللغة: ${labelLang(p.language)}\n` +
-        `المستوى: ${p.level || "-"}\n` +
-        `المركز: ${labelCenter(p.center)}\n` +
-        `نوع الدورة: ${labelCourseType(p.course_type)}\n` +
-        `تاريخ التسجيل: ${new Date(p.created_at || Date.now()).toLocaleString("ar")}`;
+        `🔔 NEW STUDENT REGISTRATION\n\n` +
+        `👤 Name: ${p.full_name || "-"}\n` +
+        `📞 Phone: ${p.phone || "-"}\n` +
+        `🎂 Age: ${p.age ?? "-"}\n` +
+        `🌍 Language: ${labelLang(p.language)}\n` +
+        `📚 Level: ${p.level || "-"}\n` +
+        `🏫 Study Center: ${labelCenter(p.center)}\n` +
+        `🖥️ Course Type: ${labelCourseType(p.course_type)}\n\n` +
+        `📅 Registration Date:\n${regDate}\n\n` +
+        `🆔 Student ID:\n${p.student_id || "-"}\n\n` +
+        `💬 Student Note:\n${(p.notes && p.notes.trim()) || "—"}\n\n` +
+        `━━━━━━━━━━━━━━━━━━\n` +
+        `Total pending applications:\n${pending ?? "-"}\n\n` +
+        `🌐 Open Admin Dashboard:\n${ADMIN_DASHBOARD_URL}`;
       break;
+    }
     case "acceptance":
       text =
         `✅ مرحباً ${p.full_name || ""}،\n` +
@@ -136,7 +172,7 @@ serve(async (req) => {
     }
 
     const payload: Payload = await req.json().catch(() => ({}));
-    const { to, body } = buildBody(payload);
+    const { to, body } = await buildBody(payload);
 
     const url = `${KAPSO_BASE}/${PHONE_NUMBER_ID}/messages`;
     const resp = await fetch(url, {
