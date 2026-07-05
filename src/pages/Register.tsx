@@ -131,17 +131,25 @@ const Register = () => {
       toast({ title: "خطأ", description: "تعذّر إرسال الطلب، حاول مجدداً", variant: "destructive" });
       return;
     }
-    // Fire-and-forget WhatsApp notification to admin
-    supabase.functions.invoke("notify-whatsapp-registration", {
-      body: {
-        full_name: parsed.data.full_name,
-        phone: parsed.data.phone,
-        language: parsed.data.language,
-        level: parsed.data.level,
-        preferred_time: parsed.data.preferred_time || "",
-        created_at: new Date().toISOString(),
-      },
-    }).catch(() => {});
+    // Fire-and-forget WhatsApp notification to admin (after successful save)
+    console.log("WhatsApp notification started");
+    supabase.functions
+      .invoke("notify-whatsapp-registration", {
+        body: {
+          full_name: parsed.data.full_name,
+          phone: parsed.data.phone,
+          language: parsed.data.language,
+          level: parsed.data.level,
+          age: parsed.data.age ?? null,
+          preferred_time: parsed.data.preferred_time || "",
+          created_at: new Date().toISOString(),
+        },
+      })
+      .then((res) => {
+        if (res.error) console.error("WhatsApp notification failed:", res.error);
+        else console.log("WhatsApp notification sent successfully", res.data);
+      })
+      .catch((err) => console.error("WhatsApp notification failed:", err));
     setDone(true);
     toast({ title: "تم", description: "تم استلام طلبك بنجاح، وسيتم مراجعته بعد التحقق من عملية الدفع." });
   };
