@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const KAPSO_BASE = "https://api.kapso.ai/meta/whatsapp/v24.0";
+const KAPSO_BASE = Deno.env.get("KAPSO_BASE_URL") || "https://api.kapso.ai/meta/whatsapp/v24.0";
 const DEFAULT_ADMIN = Deno.env.get("ADMIN_WHATSAPP_NUMBER") || "22236423111";
 const PHONE_NUMBER_ID = Deno.env.get("KAPSO_PHONE_NUMBER_ID") || "597907523413541";
 
