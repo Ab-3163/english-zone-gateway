@@ -102,15 +102,15 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className={`fixed top-0 right-0 left-0 z-50 transition-all duration-500 ${
-      isScrolled 
-        ? "bg-background/90 backdrop-blur-xl border-b border-border/60 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)]" 
+    <nav className={`fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${
+      isScrolled
+        ? "bg-background/75 backdrop-blur-xl border-b border-border/50 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)]"
         : "bg-transparent"
     }`}>
       <div className="container mx-auto px-4">
-        <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? "h-16" : "h-20"}`}>
+        <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? "h-14" : "h-16"}`}>
           {/* Logo with hidden admin trigger */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button 
               onClick={() => {
                 const newCount = logoClickCount + 1;
@@ -120,34 +120,37 @@ const Navbar = () => {
                   setLogoClickCount(0);
                 }
               }}
-              className="flex items-center gap-3 group"
+              className="flex items-center gap-2 group focus:outline-none"
+              aria-label="ÉLITE ZONE"
             >
               <div className="relative">
                 <img 
                   src={logo} 
                   alt="ÉLITE ZONE" 
-                  className={`w-auto rounded-lg transition-all duration-300 group-hover:scale-105 ${
-                    isScrolled ? "h-11" : "h-14 shadow-lg"
+                  className={`w-auto rounded-md transition-all duration-300 group-hover:scale-105 group-active:scale-95 ${
+                    isScrolled ? "h-8" : "h-10 shadow-md"
                   } ${location.pathname === "/" && !isScrolled ? "opacity-0 pointer-events-none" : ""}`}
                 />
               <div className="absolute -inset-1 bg-primary/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
             </div>
           </button>
-          
-          {/* Admin button - shows when logged in as admin OR after secret click */}
+
+          {/* Discreet admin indicator — only when admin is active */}
           {(isAdmin || showAdminButton) && (
             <button
               onClick={openAdminPanel}
-              className="flex items-center gap-2 px-3 py-2 bg-primary/10 rounded-lg text-primary text-sm font-medium hover:bg-primary/20 transition-colors animate-fade-in"
+              aria-label={t("nav.adminPanel")}
+              title={t("nav.adminPanel")}
+              className="relative inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary/15 text-primary hover:bg-primary/25 transition-all duration-200 animate-fade-in"
             >
-              <Shield className="w-4 h-4" />
-              {t("nav.adminPanel")}
+              <Shield className="w-3.5 h-3.5" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary ring-2 ring-background animate-pulse" />
             </button>
           )}
         </div>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-0.5">
           {navLinks.map((link) => {
             const isRoute = link.href.startsWith("/");
             const hrefFinal = (!isRoute && location.pathname !== "/") ? `/${link.href}` : link.href;
@@ -155,7 +158,7 @@ const Navbar = () => {
               <a
                 key={link.href}
                 href={hrefFinal}
-                className={`relative px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                className={`relative px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-300 ${
                   !isRoute && activeSection === link.href.replace("#", "")
                     ? "text-primary"
                     : isScrolled 
@@ -170,10 +173,10 @@ const Navbar = () => {
               </a>
             );
           })}
-          <LanguageSwitcher variant={isScrolled ? "dark" : "light"} className="ml-2" />
-          <a 
+          <LanguageSwitcher variant={isScrolled ? "dark" : "light"} className="ml-3" />
+          <a
             href="/register"
-            className="btn-primary mr-4"
+            className="btn-primary ml-3 !py-2 !px-4 text-sm"
           >
             {t("nav.register")}
           </a>
@@ -183,13 +186,13 @@ const Navbar = () => {
           <div className="md:hidden flex items-center gap-2">
             <LanguageSwitcher variant={isScrolled ? "dark" : "light"} />
             <button
-              className={`p-2 rounded-lg transition-colors ${
-                isScrolled ? "text-foreground" : "text-white"
+              className={`p-2 rounded-full transition-all duration-200 hover:bg-white/10 active:scale-90 ${
+                isScrolled ? "text-foreground hover:bg-foreground/10" : "text-white"
               }`}
               onClick={() => setIsOpen(!isOpen)}
               aria-label={t("nav.toggleMenu")}
             >
-              {isOpen ? <X size={28} /> : <Menu size={28} />}
+              {isOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
         </div>
