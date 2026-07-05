@@ -15,6 +15,7 @@ interface Reg {
   language: string;
   level: string | null;
   course_type: string | null;
+  study_center: string | null;
   preferred_time: string | null;
   notes: string | null;
   status: string;
@@ -31,6 +32,9 @@ const statusVariant: Record<string, string> = {
   confirmed: "bg-green-100 text-green-700 border-green-200",
   rejected: "bg-red-100 text-red-700 border-red-200",
 };
+
+const centerLabel = (c: string | null) =>
+  c === "nouakchott" ? "نواكشوط" : c === "tensoueilim" ? "تنسويلم" : "—";
 
 const RegistrationsManager = () => {
   const [rows, setRows] = useState<Reg[]>([]);
@@ -69,6 +73,7 @@ const RegistrationsManager = () => {
       language: r.language || "english",
       level: r.level || "A1",
       course_type: r.course_type || "in_person",
+      study_center: r.study_center,
       preferred_time: r.preferred_time,
       notes: r.notes,
       course_fee: 1700,
@@ -76,7 +81,7 @@ const RegistrationsManager = () => {
       remaining_amount: 1700,
       payment_status: "pending",
       status: "registered",
-    });
+    } as any);
     if (insErr) {
       toast({ title: "خطأ", description: insErr.message, variant: "destructive" });
       return;
@@ -153,6 +158,7 @@ const RegistrationsManager = () => {
             <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5"><GraduationCap className="w-3.5 h-3.5" /><span>{r.language}{r.level ? ` · ${r.level}` : ""}</span></div>
               <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /><span>{new Date(r.created_at).toLocaleDateString("ar")}</span></div>
+              <div className="col-span-2 flex items-center gap-1.5"><span className="font-medium">المركز:</span><span>{centerLabel(r.study_center)}</span></div>
             </div>
             {r.notes && <p className="text-xs bg-muted/50 rounded-lg p-2 line-clamp-2">{r.notes}</p>}
             <div className="flex flex-wrap gap-2 pt-1">
@@ -188,6 +194,7 @@ const RegistrationsManager = () => {
                 <th className="text-right p-3">اللغة</th>
                 <th className="text-right p-3">المستوى</th>
                 <th className="text-right p-3">النوع</th>
+                <th className="text-right p-3">المركز</th>
                 <th className="text-right p-3">التاريخ</th>
                 <th className="text-right p-3">الحالة</th>
                 <th className="text-right p-3">إجراءات</th>
@@ -204,6 +211,7 @@ const RegistrationsManager = () => {
                   <td className="p-3">{r.language}</td>
                   <td className="p-3">{r.level || "—"}</td>
                   <td className="p-3">{r.course_type === "in_person" ? "حضورية" : r.course_type === "online" ? "أونلاين" : "—"}</td>
+                  <td className="p-3">{centerLabel(r.study_center)}</td>
                   <td className="p-3 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("ar")}</td>
                   <td className="p-3">
                     <span className={`text-xs px-2 py-1 rounded-full border ${statusVariant[r.status] || "bg-muted"}`}>
@@ -233,7 +241,7 @@ const RegistrationsManager = () => {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">لا توجد طلبات</td></tr>
+                <tr><td colSpan={9} className="p-6 text-center text-muted-foreground">لا توجد طلبات</td></tr>
               )}
             </tbody>
           </table>
