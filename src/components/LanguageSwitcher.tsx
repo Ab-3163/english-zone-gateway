@@ -35,28 +35,31 @@ const LanguageSwitcher = ({ variant = "dark", className = "" }: Props) => {
       : "text-foreground hover:bg-primary/10";
 
   return (
-    <button
+    <div
       className={`${wrapper} ${wrapperTheme} ${className}`}
+      role="group"
       aria-label="Change language / Changer de langue / تغيير اللغة"
     >
       <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-primary mx-1" />
-      <span
+      <button
+        type="button"
         onClick={() => setLang("ar")}
-        className={`${base} ${current === "ar" ? active : inactive} cursor-pointer`}
+        className={`${base} ${current === "ar" ? active : inactive}`}
         aria-pressed={current === "ar"}
         title="العربية"
       >
         AR
-      </span>
-      <span
+      </button>
+      <button
+        type="button"
         onClick={() => setLang("fr")}
-        className={`${base} ${current === "fr" ? active : inactive} cursor-pointer`}
+        className={`${base} ${current === "fr" ? active : inactive}`}
         aria-pressed={current === "fr"}
         title="Français"
       >
         FR
-      </span>
-    </button>
+      </button>
+    </div>
   );
 };
 
