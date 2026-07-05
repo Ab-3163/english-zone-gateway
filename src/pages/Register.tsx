@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { z } from "zod";
-import { Loader2, CheckCircle2, UserPlus, Copy, Wallet, Upload, FileText, X, Info } from "lucide-react";
+import { Loader2, CheckCircle2, UserPlus, Copy, Check, Upload, FileText, X, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,11 +41,14 @@ const Register = () => {
   const [lastSubmit, setLastSubmit] = useState(0);
   const [receipt, setReceipt] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const copyBankily = async () => {
     try {
       await navigator.clipboard.writeText(BANKILY_NUMBER);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
       toast({ title: "تم النسخ", description: "تم نسخ رقم بنكيلي بنجاح." });
     } catch {
       toast({ title: "خطأ", description: "تعذّر النسخ", variant: "destructive" });
@@ -146,46 +149,46 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       <Navbar />
-      <main className="pt-32 pb-20 section-padding">
-        <div className="container mx-auto max-w-2xl">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-4">
-              <UserPlus className="w-8 h-8" />
+      <main className="pt-20 sm:pt-24 pb-24">
+        <div className="w-[92%] max-w-2xl mx-auto">
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 text-primary mb-3">
+              <UserPlus className="w-7 h-7" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-3">التسجيل في الدورات</h1>
-            <p className="text-muted-foreground">املأ النموذج وسنتواصل معك في أقرب وقت</p>
+            <h1 className="text-2xl sm:text-4xl font-bold mb-2">التسجيل في الدورات</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">املأ النموذج وسنتواصل معك في أقرب وقت</p>
           </div>
 
           {done ? (
-            <div className="bg-card border border-border rounded-2xl p-10 text-center shadow-sm">
-              <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">تم استلام طلبك بنجاح</h2>
-              <p className="text-muted-foreground mb-6">سيتم مراجعة طلبك بعد التحقق من عملية الدفع، وسنتواصل معك قريباً.</p>
+            <div className="bg-card border border-border rounded-2xl p-6 sm:p-10 text-center shadow-sm">
+              <CheckCircle2 className="w-14 h-14 text-green-500 mx-auto mb-3" />
+              <h2 className="text-xl sm:text-2xl font-bold mb-2">تم استلام طلبك بنجاح</h2>
+              <p className="text-sm sm:text-base text-muted-foreground mb-6">سيتم مراجعته بعد التحقق من الدفع، وسنتواصل معك قريباً.</p>
               <Button onClick={() => { setDone(false); removeReceipt(); setForm({ ...form, full_name: "", phone: "", age: "", preferred_time: "", notes: "" }); }}>
                 تقديم طلب آخر
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="bg-card border border-border rounded-2xl p-6 md:p-8 shadow-sm space-y-5">
+            <form onSubmit={handleSubmit} className="bg-card border border-border rounded-2xl p-4 sm:p-7 shadow-sm space-y-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">الاسم الكامل *</label>
-                <Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} maxLength={100} required />
+                <label className="text-sm font-medium mb-1.5 block">الاسم الكامل *</label>
+                <Input className="h-11" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} maxLength={100} required />
               </div>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">رقم الهاتف / واتساب *</label>
-                  <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} maxLength={30} dir="ltr" required />
+                  <label className="text-sm font-medium mb-1.5 block">رقم الهاتف / واتساب *</label>
+                  <Input className="h-11" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} maxLength={30} dir="ltr" required />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">العمر</label>
-                  <Input type="number" min={5} max={99} value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} dir="ltr" />
+                  <label className="text-sm font-medium mb-1.5 block">العمر</label>
+                  <Input className="h-11" type="number" min={5} max={99} value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} dir="ltr" />
                 </div>
               </div>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">اللغة المطلوبة *</label>
+                  <label className="text-sm font-medium mb-1.5 block">اللغة المطلوبة *</label>
                   <Select value={form.language} onValueChange={(v) => setForm({ ...form, language: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="french">الفرنسية</SelectItem>
                       <SelectItem value="english">الإنجليزية</SelectItem>
@@ -194,86 +197,75 @@ const Register = () => {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">المستوى المطلوب *</label>
+                  <label className="text-sm font-medium mb-1.5 block">المستوى المطلوب *</label>
                   <Select value={form.level} onValueChange={(v) => setForm({ ...form, level: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {["A1","A2","B1","B2","C1"].map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">نوع الدورة *</label>
-                  <Select value={form.course_type} onValueChange={(v) => setForm({ ...form, course_type: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="in_person">حضورية</SelectItem>
-                      <SelectItem value="online">أونلاين</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">الوقت المناسب</label>
-                  <Input value={form.preferred_time} onChange={(e) => setForm({ ...form, preferred_time: e.target.value })} placeholder="مثال: المساء بعد ٦" maxLength={100} />
-                </div>
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">الوقت المناسب</label>
+                <Input className="h-11" value={form.preferred_time} onChange={(e) => setForm({ ...form, preferred_time: e.target.value })} placeholder="مثال: المساء بعد ٦" maxLength={100} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-2 block">ملاحظات</label>
-                <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} maxLength={1000} rows={3} />
+                <label className="text-sm font-medium mb-1.5 block">ملاحظات</label>
+                <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} maxLength={1000} rows={2} />
               </div>
 
-              {/* Payment Card */}
-              <div className="rounded-2xl border border-border overflow-hidden shadow-sm">
-                <div className="bg-gradient-to-l from-[#0B1F4D] to-[#1e3a8a] text-white p-4 md:p-5 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center">
-                    <Wallet className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-base md:text-lg">معلومات الدفع</div>
-                    <div className="text-xs text-white/75">طريقة الدفع الوحيدة المعتمدة</div>
-                  </div>
+              {/* Payment Card — simple, clear */}
+              <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+                <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                  <div className="font-bold text-base">معلومات الدفع</div>
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600">Bankily</span>
                 </div>
-                <div className="p-4 md:p-5 bg-card space-y-4">
-                  <div className="flex items-center justify-between gap-3 bg-gradient-to-l from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-3 md:p-4">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <div className="w-9 h-9 rounded-lg bg-orange-500 text-white flex items-center justify-center font-black text-sm shrink-0">B</div>
-                        <div className="min-w-0">
-                          <div className="text-[11px] text-muted-foreground">Bankily</div>
-                          <div className="font-black text-xl md:text-2xl text-foreground tracking-wider" dir="ltr">{BANKILY_NUMBER}</div>
-                        </div>
-                      </div>
+                <div className="p-4 sm:p-5 space-y-3">
+                  <div className="text-center">
+                    <div className="text-xs text-muted-foreground mb-1">رقم Bankily</div>
+                    <div
+                      className="font-black text-3xl sm:text-4xl tracking-[0.15em] text-foreground select-all py-2"
+                      dir="ltr"
+                    >
+                      {BANKILY_NUMBER}
                     </div>
-                    <Button type="button" onClick={copyBankily} size="sm" className="gap-1.5 shrink-0 bg-orange-500 hover:bg-orange-600 text-white">
-                      <Copy className="w-4 h-4" />
-                      نسخ
+                    <Button
+                      type="button"
+                      onClick={copyBankily}
+                      size="sm"
+                      variant={copied ? "secondary" : "default"}
+                      className="mt-1 gap-1.5 min-w-[140px] transition-all"
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="w-4 h-4" /> تم النسخ
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4" /> نسخ الرقم
+                        </>
+                      )}
                     </Button>
                   </div>
-
-                  <div className="flex items-start gap-2 bg-green-50 border border-green-200 rounded-xl p-3 md:p-4 text-sm text-green-900 leading-relaxed">
-                    <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-                    <span>
-                      يرجى تحويل رسوم التسجيل إلى رقم بنكيلي أعلاه، ثم رفع صورة إيصال الدفع قبل إرسال الطلب.
-                      <br />
-                      <strong>لن يتم مراجعة أي طلب لا يحتوي على إيصال الدفع.</strong>
-                    </span>
+                  <div className="flex items-start gap-2 bg-green-50 border border-green-200 rounded-xl p-3 text-sm text-green-900 leading-relaxed">
+                    <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
+                    <span>حوّل رسوم التسجيل إلى رقم Bankily، ثم ارفع صورة الإيصال لإتمام الطلب.</span>
                   </div>
                 </div>
               </div>
 
               {/* Receipt upload */}
               <div>
-                <label className="text-sm font-bold mb-2 flex items-center gap-2">
+                <label className="text-sm font-medium mb-1.5 flex items-center gap-2">
                   <Upload className="w-4 h-4 text-primary" />
-                  رفع صورة إيصال الدفع <span className="text-primary">*</span>
+                  إيصال الدفع <span className="text-primary">*</span>
                 </label>
                 {!receipt ? (
-                  <label htmlFor="receipt" className="block cursor-pointer border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 rounded-xl p-6 text-center transition-all">
-                    <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                    <div className="text-sm font-medium">اضغط لاختيار الملف</div>
-                    <div className="text-xs text-muted-foreground mt-1">JPG · PNG · WEBP · PDF (حتى 5MB)</div>
+                  <label htmlFor="receipt" className="block cursor-pointer border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 rounded-xl p-4 text-center transition-all">
+                    <Upload className="w-6 h-6 text-muted-foreground mx-auto mb-1.5" />
+                    <div className="text-sm font-medium">اضغط لاختيار الإيصال</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">JPG · PNG · WEBP · PDF (حتى 5MB)</div>
                     <input
                       id="receipt"
                       ref={fileInputRef}
@@ -284,12 +276,12 @@ const Register = () => {
                     />
                   </label>
                 ) : (
-                  <div className="border border-border rounded-xl p-3 bg-secondary/30 flex items-center gap-3">
+                  <div className="border border-border rounded-xl p-2.5 bg-secondary/30 flex items-center gap-3">
                     {receiptPreview ? (
-                      <img src={receiptPreview} alt="preview" className="w-16 h-16 rounded-lg object-cover border border-border" />
+                      <img src={receiptPreview} alt="preview" className="w-14 h-14 rounded-lg object-cover border border-border" />
                     ) : (
-                      <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <FileText className="w-8 h-8 text-primary" />
+                      <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <FileText className="w-7 h-7 text-primary" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
@@ -303,11 +295,11 @@ const Register = () => {
                 )}
               </div>
 
-              <Button type="submit" disabled={submitting} className="w-full py-6 text-base font-bold shadow-lg shadow-primary/25">
+              <Button type="submit" disabled={submitting} className="w-full h-12 text-base font-bold shadow-lg shadow-primary/25">
                 {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "إرسال طلب التسجيل"}
               </Button>
 
-              <div className="flex items-start gap-2 text-xs text-muted-foreground">
+              <div className="flex items-start gap-2 text-xs text-muted-foreground pt-1">
                 <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                 <span>بالضغط على "إرسال" فإنك توافق على مراجعة الإدارة لطلبك خلال 24 ساعة.</span>
               </div>
