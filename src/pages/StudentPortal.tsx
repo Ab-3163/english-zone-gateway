@@ -99,7 +99,7 @@ const StudentPortal = () => {
             <Section icon={GraduationCap} title="الدراسة">
               <Field label="اللغة" value={student.language} />
               <Field label="المستوى الحالي" value={student.level} />
-              <Field label="مركز الدراسة" value={student.study_center === "nouakchott" ? "نواكشوط" : student.study_center === "tensoueilim" ? "تنسويلم" : "-"} />
+              <Field label="مركز الدراسة" value={student.study_center === "ksar" ? "Ksar" : student.study_center === "tensoueilim" ? "تنسويلم" : "-"} />
               <Field label="القسم/المجموعة" value={student.group_name} />
               <Field label="الأستاذ" value={student.teacher} />
               <Field label="أيام الدراسة" value={student.study_days} />

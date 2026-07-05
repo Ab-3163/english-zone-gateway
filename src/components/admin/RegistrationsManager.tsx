@@ -40,7 +40,7 @@ const RegistrationsManager = () => {
     rejected: t("admin.reg.statusRejected"),
   };
   const centerLabel = (c: string | null) =>
-    c === "nouakchott" ? t("register.centerNouakchott") : c === "tensoueilim" ? t("register.centerTensoueilim") : "—";
+    c === "ksar" ? t("register.centerKsar") : c === "tensoueilim" ? t("register.centerTensoueilim") : "—";
   const [rows, setRows] = useState<Reg[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

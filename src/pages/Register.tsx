@@ -22,7 +22,7 @@ const schema = z.object({
   language: z.enum(["french", "english", "arabic"]),
   level: z.enum(["A1", "A2", "B1", "B2", "C1"]),
   course_type: z.enum(["in_person", "online"]),
-  study_center: z.enum(["nouakchott", "tensoueilim"]),
+  study_center: z.enum(["ksar", "tensoueilim"]),
   preferred_time: z.string().trim().max(100).optional(),
   notes: z.string().trim().max(1000).optional(),
 });
@@ -233,7 +233,7 @@ const Register = () => {
                 <Select value={form.study_center} onValueChange={(v) => setForm({ ...form, study_center: v })}>
                   <SelectTrigger className="h-11"><SelectValue placeholder={t("register.studyCenterPlaceholder")} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="nouakchott">{t("register.centerNouakchott")}</SelectItem>
+                    <SelectItem value="ksar">{t("register.centerKsar")}</SelectItem>
                     <SelectItem value="tensoueilim">{t("register.centerTensoueilim")}</SelectItem>
                   </SelectContent>
                 </Select>

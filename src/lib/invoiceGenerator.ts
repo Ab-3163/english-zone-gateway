@@ -31,7 +31,7 @@ const LANG_LABEL: Record<string, string> = {
 function buildHtml(s: InvoiceStudent, logoSrc: string, qrSrc: string): string {
   const date = new Date(s.payment_confirmed_at || Date.now()).toLocaleDateString("ar-EG");
   const lang = LANG_LABEL[s.language || ""] || s.language || "—";
-  const centerLbl = s.study_center === "nouakchott" ? "نواكشوط" : s.study_center === "tensoueilim" ? "تنسويلم" : "—";
+  const centerLbl = s.study_center === "ksar" ? "Ksar" : s.study_center === "tensoueilim" ? "تنسويلم" : "—";
   const paid = s.paid_amount ?? 0;
   const fee = s.course_fee ?? paid;
   const remaining = Math.max(0, fee - paid);
