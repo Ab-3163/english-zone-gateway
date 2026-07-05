@@ -118,6 +118,7 @@ const StudentsManager = () => {
         level: student.level,
         group_name: student.group_name,
         course_type: student.course_type,
+        study_center: student.study_center,
         paid_amount: Number(student.paid_amount),
         course_fee: Number(student.course_fee),
         payment_method: student.payment_method,
