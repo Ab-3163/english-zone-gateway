@@ -109,20 +109,27 @@ const Register = () => {
     setSubmitting(true);
     setLastSubmit(Date.now());
 
-    // Upload receipt
-    const ext = receipt.name.split(".").pop() || "bin";
+    // Step 1: Upload receipt to storage
+    const ext = (receipt.name.split(".").pop() || "bin").toLowerCase();
     const path = `receipt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const { error: upErr } = await supabase.storage.from("payment-receipts").upload(path, receipt, {
-      contentType: receipt.type,
-      upsert: false,
-    });
+    console.log("[register] uploading receipt", { path, type: receipt.type, size: receipt.size });
+    const { data: upData, error: upErr } = await supabase.storage
+      .from("payment-receipts")
+      .upload(path, receipt, { contentType: receipt.type || "application/octet-stream", upsert: false });
     if (upErr) {
+      console.error("[register] storage upload error:", upErr);
       setSubmitting(false);
-      toast({ title: t("register.errUpload"), description: upErr.message, variant: "destructive" });
+      toast({
+        title: t("register.errUpload"),
+        description: `Upload: ${upErr.message}`,
+        variant: "destructive",
+      });
       return;
     }
+    console.log("[register] upload ok", upData);
 
-    const { data: inserted, error } = await supabase.from("registrations").insert({
+    // Step 2: Insert registration row
+    const payload = {
       full_name: parsed.data.full_name,
       phone: parsed.data.phone,
       age: parsed.data.age ?? null,
@@ -135,14 +142,31 @@ const Register = () => {
       receipt_url: path,
       payment_method: "bankily",
       status: "payment_review",
-    } as any).select("id, created_at").single();
-    setSubmitting(false);
-    if (error) {
-      toast({ title: t("register.toastError"), description: t("register.errSend"), variant: "destructive" });
+    };
+    console.log("[register] inserting registration", payload);
+    const { data: inserted, error: insErr } = await supabase
+      .from("registrations")
+      .insert(payload as any)
+      .select("id, created_at")
+      .single();
+    if (insErr) {
+      console.error("[register] database insert error:", insErr);
+      // Cleanup orphan receipt so user can retry
+      await supabase.storage.from("payment-receipts").remove([path]).catch(() => {});
+      setSubmitting(false);
+      toast({
+        title: t("register.toastError"),
+        description: `DB: ${insErr.message}${insErr.details ? ` — ${insErr.details}` : ""}`,
+        variant: "destructive",
+      });
       return;
     }
-    // Fire-and-forget WhatsApp notification to admin (after successful save)
-    console.log("WhatsApp notification started");
+    console.log("[register] insert ok", inserted);
+    setSubmitting(false);
+    setDone(true);
+    toast({ title: t("register.toastDone"), description: t("register.successBody") });
+
+    // Step 3: Fire-and-forget WhatsApp — never blocks the user
     supabase.functions
       .invoke("send-whatsapp", {
         body: {
@@ -160,12 +184,10 @@ const Register = () => {
         },
       })
       .then((res) => {
-        if (res.error) console.error("WhatsApp notification failed:", res.error);
-        else console.log("WhatsApp notification sent successfully", res.data);
+        if (res.error) console.error("[register] whatsapp error:", res.error);
+        else console.log("[register] whatsapp sent", res.data);
       })
-      .catch((err) => console.error("WhatsApp notification failed:", err));
-    setDone(true);
-    toast({ title: t("register.toastDone"), description: t("register.successBody") });
+      .catch((err) => console.error("[register] whatsapp exception:", err));
   };
 
   return (
