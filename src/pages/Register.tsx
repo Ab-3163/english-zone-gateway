@@ -144,11 +144,10 @@ const Register = () => {
       status: "payment_review",
     };
     console.log("[register] inserting registration", payload);
-    const { data: inserted, error: insErr } = await supabase
+    const createdAt = new Date().toISOString();
+    const { error: insErr } = await supabase
       .from("registrations")
-      .insert(payload as any)
-      .select("id, created_at")
-      .single();
+      .insert(payload as any);
     if (insErr) {
       console.error("[register] database insert error:", insErr);
       // Cleanup orphan receipt so user can retry
@@ -161,7 +160,7 @@ const Register = () => {
       });
       return;
     }
-    console.log("[register] insert ok", inserted);
+    console.log("[register] insert ok");
     setSubmitting(false);
     setDone(true);
     toast({ title: t("register.toastDone"), description: t("register.successBody") });
@@ -179,8 +178,8 @@ const Register = () => {
           center: parsed.data.study_center,
           course_type: parsed.data.course_type,
           notes: parsed.data.notes || "",
-          student_id: inserted?.id || "",
-          created_at: inserted?.created_at || new Date().toISOString(),
+          student_id: "",
+          created_at: createdAt,
         },
       })
       .then((res) => {
