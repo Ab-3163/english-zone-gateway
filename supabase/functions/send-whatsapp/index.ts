@@ -12,6 +12,10 @@ const DEFAULT_ADMIN = Deno.env.get("ADMIN_WHATSAPP_NUMBER") || "22236423111";
 const PHONE_NUMBER_ID = Deno.env.get("KAPSO_PHONE_NUMBER_ID") || "597907523413541";
 const ADMIN_DASHBOARD_URL =
   Deno.env.get("ADMIN_DASHBOARD_URL") || "https://www.elitezone.center/admin";
+const REGISTRATION_TEMPLATE_NAME =
+  Deno.env.get("KAPSO_REGISTRATION_TEMPLATE") || "new_student_registration";
+const REGISTRATION_TEMPLATE_LANG =
+  Deno.env.get("KAPSO_REGISTRATION_TEMPLATE_LANG") || "ar";
 
 type MessageType =
   | "registration"
@@ -81,27 +85,45 @@ async function buildBody(p: Payload): Promise<{ to: string; body: Record<string,
   let text = "";
   switch (type) {
     case "registration": {
-      const pending = await getPendingCount();
       const regDate = new Date(p.created_at || Date.now()).toLocaleString("ar", {
         dateStyle: "medium",
         timeStyle: "short",
       });
-      text =
-        `🔔 NEW STUDENT REGISTRATION\n\n` +
-        `👤 Name: ${p.full_name || "-"}\n` +
-        `📞 Phone: ${p.phone || "-"}\n` +
-        `🎂 Age: ${p.age ?? "-"}\n` +
-        `🌍 Language: ${labelLang(p.language)}\n` +
-        `📚 Level: ${p.level || "-"}\n` +
-        `🏫 Study Center: ${labelCenter(p.center)}\n` +
-        `🖥️ Course Type: ${labelCourseType(p.course_type)}\n\n` +
-        `📅 Registration Date:\n${regDate}\n\n` +
-        `🆔 Student ID:\n${p.student_id || "-"}\n\n` +
-        `💬 Student Note:\n${(p.notes && p.notes.trim()) || "—"}\n\n` +
-        `━━━━━━━━━━━━━━━━━━\n` +
-        `Total pending applications:\n${pending ?? "-"}\n\n` +
-        `🌐 Open Admin Dashboard:\n${ADMIN_DASHBOARD_URL}`;
-      break;
+      // Use approved WhatsApp template — required outside the 24h window.
+      // Template variables (in order):
+      //   {{1}} full_name, {{2}} phone, {{3}} age, {{4}} language,
+      //   {{5}} level, {{6}} center, {{7}} created_at
+      const params = [
+        p.full_name || "-",
+        p.phone || "-",
+        p.age != null && p.age !== "" ? String(p.age) : "-",
+        labelLang(p.language),
+        p.level || "-",
+        labelCenter(p.center),
+        regDate,
+      ];
+      // Kapso/WhatsApp rejects newlines/tabs and long runs of spaces in
+      // template body params. Sanitize each value defensively.
+      const clean = (s: string) =>
+        s.replace(/[\r\n\t]+/g, " ").replace(/ {5,}/g, "    ").trim() || "-";
+      return {
+        to,
+        body: {
+          messaging_product: "whatsapp",
+          to,
+          type: "template",
+          template: {
+            name: REGISTRATION_TEMPLATE_NAME,
+            language: { code: REGISTRATION_TEMPLATE_LANG },
+            components: [
+              {
+                type: "body",
+                parameters: params.map((v) => ({ type: "text", text: clean(v) })),
+              },
+            ],
+          },
+        },
+      };
     }
     case "acceptance":
       text =
