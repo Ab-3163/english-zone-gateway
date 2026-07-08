@@ -85,7 +85,6 @@ async function buildBody(p: Payload): Promise<{ to: string; body: Record<string,
   let text = "";
   switch (type) {
     case "registration": {
-      const pending = await getPendingCount();
       const regDate = new Date(p.created_at || Date.now()).toLocaleString("ar", {
         dateStyle: "medium",
         timeStyle: "short",
