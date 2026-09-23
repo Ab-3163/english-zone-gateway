@@ -33,8 +33,11 @@ const Footer = () => {
             <div>
               <div className="inline-block mb-6">
                 <img 
-                  src={logo} 
-                  alt="ÉLITE ZONE" 
+                  src={logo}
+                  loading="lazy"
+                  decoding="async"
+                  
+                  alt="شعار ÉLITE ZONE"
                   className="h-20 w-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300" 
                 />
               </div>

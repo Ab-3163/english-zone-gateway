@@ -11,6 +11,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import Announcements from "@/components/Announcements";
 import AdminPanel from "@/components/AdminPanel";
 import LocationSection from "@/components/LocationSection";
+import SeoContent from "@/components/SeoContent";
 
 const Index = () => {
   const [adminPanelOpen, setAdminPanelOpen] = useState(false);
@@ -40,6 +41,7 @@ const Index = () => {
       <WhyUs />
       <Gallery />
       <Testimonials />
+      <SeoContent />
       <LocationSection />
       <Footer />
       <WhatsAppButton />
