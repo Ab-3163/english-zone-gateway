@@ -34,7 +34,9 @@ const Hero = () => {
             <div className="relative inline-block">
               <img
                 src={logo}
-                alt="ÉLITE ZONE"
+                alt="شعار مركز ÉLITE ZONE لتعليم اللغات في نواكشوط"
+                fetchPriority="high"
+                decoding="async"
                 className="h-24 sm:h-32 md:h-44 lg:h-52 w-auto mx-auto rounded-2xl shadow-2xl ring-2 ring-white/30"
               />
               <div className="absolute -inset-2 bg-gradient-to-r from-primary to-primary/50 rounded-3xl blur-2xl opacity-50 -z-10" />
